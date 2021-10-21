@@ -124,8 +124,8 @@
                 <div class="col-md-6">
                     <div class="message-box">
                         <h2>About Us</h2>
-                        <p> I'm a final year student majoring in Data Science & Analytics from the National University of Singapore, and upon graduation in May 2022, I will be looking for opportunities in the fields of Data Science/Analytics.</p>
-						<p> Besides being a nerd, I am also interested in trying out and exploring new recipes and cooking.</p>
+                        <p> The task of monitoring the stocking density of fish larvae and the counting of fertilised and unfertilised egg is tedious and tiring. </p>
+						<p> As such, our goal is to train a predictive model that is able to accurately classify images of petri-dish containing three main classes: Fertilised Eggs, Unfertilized Eggs and Fish Larvae, and an Unidentifiable class to handle foreign objects as well.</p>
                         <!--<a href="./resume.pdf" class="sim-btn btn-hover-new" data-text="Download CV" target="blank"><span>Download CV</span></a>-->
                     </div><!-- end messagebox -->
                 </div><!-- end col -->
@@ -160,7 +160,7 @@
                     {{ form.csrf_token }}
                     <dl><br>
                         {{ wtf.form_field(form.data_file) }}
-                        <p class="w3-opacity">Note: Please upload only Image file (i.e. 'png', 'jpeg')</p><br>
+                        <p class="w3-opacity">Note: Please upload only Image file (i.e. 'png', 'jpeg', 'jpg')</p><br>
                         {{ wtf.form_field(form.submit, class="btn btn-secondary") }}
                     </dl>
                 </form>
@@ -241,6 +241,9 @@
     <!-- ALL PLUGINS -->
     <script src="{{url_for('static', filename='js/custom.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.vide.js')}}"></script>
+    <script>
+        localStorage.setItem("firstname", "Smith");
+    </script>
 
 </body>
 </html>

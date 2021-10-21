@@ -64,7 +64,7 @@
               <a class="nav-link" href="{{ url_for('home') }}">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('home') }}#about">About Us</a>
+              <a class="nav-link" href="{{ url_for('home') }}#abouts">About Us</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('home') }}#detector">Our Detector</a>
@@ -80,8 +80,9 @@
 	<section id="home" class="main-banner parallaxie" style="background: url('../static/uploads/fishmainpage.jpg')">
 		<div class="heading">
 			<h1>Upload Success</h1>
-			<p>Please wait (approximately 2mins) while our model runs.<br> You can proceed download the outputs once completed.</p>
-
+			<p>Please wait (approximately 2 mins) while our model runs its inference on {{ filename }}.<br> You can proceed to download the outputs once completed.</p>
+            <a style="background-color:white" class="sim-btn btn-hover-new" data-text="Download Results" target="blank" href="../static/images/results{{control_id}}.png" download><span>Download Results</span></a>
+            <a href="{{ url_for('home') }}#detector" style="background-color:white" class="sim-btn btn-hover-new" data-text="Upload Another Image"><span>Upload Another Image</span></a>
 		</div>
 	</section>
 
