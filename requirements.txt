@@ -1,1 +1,7 @@
-flask
+Flask
+Flask-WTF
+Flask-SQLAlchemy
+Flask-Login
+WTForms
+Werkzeug
+pandas
