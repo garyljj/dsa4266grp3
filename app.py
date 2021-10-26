@@ -28,5 +28,9 @@ def mock_pred():
         'bounding_box': [random.random(), random.random(), random.random(), random.random()]
     }
 
+@app.route('/')
+def index():
+    return "this is a test page"
+
 if __name__ == '__main__':
     app.run(host='localhost', debug=True, port=5000)
