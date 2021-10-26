@@ -2,6 +2,7 @@ Flask
 Flask-WTF
 Flask-SQLAlchemy
 Flask-Login
+Flask-Bootstrap
 WTForms
 Werkzeug
 pandas
