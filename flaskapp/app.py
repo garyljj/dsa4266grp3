@@ -9,7 +9,7 @@ import sys
 import base64
 import random
 import json
-
+import time
 
 UPLOAD_FOLDER = './static/uploaded_image'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
@@ -57,6 +57,54 @@ def result_download():
     return render_template('result_download.html', filename=filename, control_id=control_id)
 
 
+
+
+
+
+def run_predictions(datafiles):
+    """
+    in: list of datafile
+    out: list of data
+        [
+            {
+                "filename": "img1.jpg",
+                "image": [[1,1...],[1,1...]...] #img array
+                "annotated_image":  [[1,1...],[1,1...]...], #img array
+                "prediction": [
+                    {
+                        'predicted_class': 1,
+                        'confidence': 0.538972,
+                        'bounding_box': [0.52875,0.23871,0.42894,0.4284]
+                    },
+                    ...
+                ]
+            },
+            {
+                next image
+            },
+            ...
+        ]
+    """
+
+    time.sleep(5)
+
+    def temp(df):
+        data = {
+            "filename": df.filename,
+            "image": df.data,
+            "annotated_image": df.data,
+            "prediction": get_prediction(df.data)
+        }
+        return data
+
+    return list(map(temp, datafiles))
+
+
+
+
+
+
+# RESTAPI
 @app.route('/predict', methods=['POST'])
 def predict():
     data = json.loads(request.get_json())
