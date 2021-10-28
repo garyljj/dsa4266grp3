@@ -8,5 +8,5 @@ from werkzeug.utils import secure_filename
 #from datetime import datetime,date,timedelta
 
 class UploadImageForm(FlaskForm):
-    data_file = FileField('Upload Image File', validators=[FileRequired(), FileAllowed(['png', 'jpeg', 'jpg'], 'Image Files only!')])
+    data_file = FileField('Upload Image File', render_kw={'multiple': True}, validators=[FileRequired(), FileAllowed(['png', 'jpeg', 'jpg'], 'Image Files only!')])
     submit = SubmitField('Upload')

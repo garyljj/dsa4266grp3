@@ -76,9 +76,9 @@
 
 	<section id="home" class="main-banner parallaxie" style="background: url('../static/uploads/fishmainpage.jpg')">
 		<div class="heading">
-			<h1>Upload Success</h1>
-			<p>Please wait (approximately 2 mins) while our model runs its inference on {{ filename }}.<br> You can proceed to download the outputs once completed.</p>
-            <a style="background-color:white" class="sim-btn btn-hover-new" data-text="Download Results" target="blank" href="../static/output/results{{control_id}}.png" download><span>Download Results</span></a>
+			<h1>Detection Completed</h1>
+			<p>You can now download the outputs below. <br> Thank you for using Group 3's detector.</p>
+            <a style="background-color:white" class="sim-btn btn-hover-new" data-text="Download Results" target="blank" href="../static/output/results.json." download><span>Download Results</span></a>
             <a href="{{ url_for('home') }}#contact" style="background-color:white" class="sim-btn btn-hover-new" data-text="Upload Another Image"><span>Upload Another Image</span></a>
 		</div>
 	</section>
