@@ -61,7 +61,7 @@ def result_download():
 
 
 
-def run_predictions(datafiles):
+def run_predictions(datafiles, mask=True):
     """
     in: list of datafile
     out: list of data
