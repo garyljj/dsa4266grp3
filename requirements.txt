@@ -6,3 +6,5 @@ Flask-Bootstrap
 WTForms
 Werkzeug
 pandas
+opencv-python
+scikit-image
