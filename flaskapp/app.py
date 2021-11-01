@@ -61,17 +61,6 @@ def result_download():
 
 
 
-def mask_preview(img, preview_size):
-    """
-    img: ndarry
-    preview_size: tuple eg. (4032, 2268) #TODO if more suitable, change to input a scale_factor instead
-    """
-    masked_img = mask_img(img)
-    cv2.resize(mask_img, preview_size)
-    return masked_img
-
-
-
 def run_predictions(datafiles):
     """
     in: list of datafile
