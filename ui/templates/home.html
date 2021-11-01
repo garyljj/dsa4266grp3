@@ -145,7 +145,7 @@
                 <h3>Masking Preview</h3>
                 <p>This portion allows you to check if the masking will be useful for your image.</p>
             </div><!-- end title -->
-            {% if image %}
+            {% if image_name %}
                 <div>
                     <img src="{{ url_for('static', filename='preview/' + image_name) }}" width='300' height='300' >
                     <br><br>

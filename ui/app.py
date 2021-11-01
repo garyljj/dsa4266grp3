@@ -8,7 +8,7 @@ import random
 import json
 import time
 from datetime import datetime
-from .model import mask_img
+from model import mask_img
 import numpy as np
 import cv2
 
@@ -77,7 +77,7 @@ def result_download():
     unique_num = session.get("unique_num", None)
     return render_template('result_download.html', unique_num=unique_num)
 
-def run_predictions(datafiles):
+def run_predictions(datafiles, mask=True):
     """
     in: list of datafile
     out: list of data
