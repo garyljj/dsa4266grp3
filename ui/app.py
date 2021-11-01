@@ -9,6 +9,8 @@ import json
 import time
 from datetime import datetime
 from .model import mask_img
+import numpy as np
+import cv2
 
 UPLOAD_FOLDER = './static/uploaded_image'
 PREVIEW_FOLDER = './static/preview'
@@ -34,9 +36,13 @@ def home():
     if form2.validate_on_submit():
         print("HERE2")
         image = request.files['data_file_preview']
-        masked_image = mask_img(image)
         image_name = image.filename
-        masked_image.save(os.path.join(app.config['PREVIEW_FOLDER'], image_name))
+
+        npimg = np.fromfile(image, np.uint8)
+        image = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+        masked_image = mask_img(image)
+        cv2.imwrite(os.path.join(app.config['PREVIEW_FOLDER'], image_name), masked_image)
+
         return render_template('home.html', form1=form1, form2=form2, image=masked_image, image_name=image_name)
 
     if request.method == 'POST':
