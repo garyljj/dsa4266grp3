@@ -1,23 +1,24 @@
 import os
 from flask import Flask, render_template, flash, redirect, url_for, session, request, flash
-from .forms import UploadImageForm
-from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileRequired
-from werkzeug.utils import secure_filename
+from .forms import UploadImageForm, PreviewImageForm
 import pandas as pd
 import sys
 import base64
 import random
 import json
 import time
+from datetime import datetime
+from .model import mask_img
 
 UPLOAD_FOLDER = './static/uploaded_image'
+PREVIEW_FOLDER = './static/preview'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 from flask_bootstrap import Bootstrap
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'pokemon'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['PREVIEW_FOLDER'] = PREVIEW_FOLDER
 Bootstrap(app)
 
 def allowed_file(filename): #returns True if is an image
@@ -26,19 +27,19 @@ def allowed_file(filename): #returns True if is an image
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    form = UploadImageForm()
+    print("HERE")
+    form2 = PreviewImageForm()
+    form1 = UploadImageForm()
+
+    if form2.validate_on_submit():
+        print("HERE2")
+        image = request.files['data_file_preview']
+        masked_image = mask_img(image)
+        image_name = image.filename
+        masked_image.save(os.path.join(app.config['PREVIEW_FOLDER'], image_name))
+        return render_template('home.html', form1=form1, form2=form2, image=masked_image, image_name=image_name)
+
     if request.method == 'POST':
-
-        # For single file upload
-        #data_file = request.files['data_file']
-        # print(data_file)
-
-        #if data_file and allowed_file(data_file.filename):
-        #    filename = data_file.filename
-        #    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        #    data_file.save(path)
-        #    session["filename"] = filename
-
         # For more than one file upload
         all_files = request.files.getlist("data_file")
         print(all_files)
@@ -48,25 +49,27 @@ def home():
             return redirect(url_for('home') +"#contact")
 
         if all(allowed_file(x.filename) == True for x in all_files):
+            unique_num = str(str(datetime.today()).split(".")[0])[-9:].replace(':', '')
+            session['unique_num'] = unique_num
+            print(unique_num)
             for file in all_files:
                 filename = file.filename
                 path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(path)
-            #flash('Upload success! Please wait while we run our model...', 'alert-success')
-            #return redirect(url_for('home') + "#contact")
-            #time.sleep(180)
+
+            mask = form1.mask.data  ## mask refers to the boolean of either true or false
+            print(mask)
+            #results = run_predictions(all_files, mask)
             results = run_predictions(all_files)
             print(results)
-
+            #return render_template('result_download.html', unique_num=unique_num)
             return redirect(url_for('result_download'))
-    return render_template('home.html', form=form)
+    return render_template('home.html', form1=form1, form2=form2)
 
 @app.route('/result_download', methods=['GET', 'POST'])
 def result_download():
-    #full_filename = session.get("filename", None)
-    #filename = full_filename.rsplit('.', 1)[0]
-    #filetype = full_filename.rsplit('.', 1)[1]
-    return render_template('result_download.html')
+    unique_num = session.get("unique_num", None)
+    return render_template('result_download.html', unique_num=unique_num)
 
 def run_predictions(datafiles):
     """

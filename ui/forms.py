@@ -9,4 +9,10 @@ from werkzeug.utils import secure_filename
 
 class UploadImageForm(FlaskForm):
     data_file = FileField('Upload Image File', render_kw={'multiple': True}, validators=[FileRequired(), FileAllowed(['png', 'jpeg', 'jpg'], 'Image Files only!')])
+    mask = BooleanField('Mask', default=True)
+    #mask = SelectField(u'Mask', choices=[('Yes', 'No')])
     submit = SubmitField('Upload')
+
+class PreviewImageForm(FlaskForm):
+    data_file_preview = FileField('Upload Image File', validators=[FileRequired(), FileAllowed(['png', 'jpeg', 'jpg'], 'Image Files only!')])
+    submit_preview = SubmitField('Preview')
