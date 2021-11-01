@@ -1,65 +1,81 @@
 import os
 from flask import Flask, render_template, flash, redirect, url_for, session, request, flash
-from .forms import UploadImageForm
-from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileRequired
-from werkzeug.utils import secure_filename
+from .forms import UploadImageForm, PreviewImageForm
 import pandas as pd
 import sys
 import base64
 import random
 import json
 import time
+from datetime import datetime
 from .model import mask_img
+import numpy as np
 import cv2
 
 UPLOAD_FOLDER = './static/uploaded_image'
+PREVIEW_FOLDER = './static/preview'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 from flask_bootstrap import Bootstrap
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'pokemon'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['PREVIEW_FOLDER'] = PREVIEW_FOLDER
 Bootstrap(app)
 
-def allowed_file(filename):
+def allowed_file(filename): #returns True if is an image
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    form = UploadImageForm()
-    if request.method == 'POST':
-        data_file = request.files['data_file']
-        if data_file and allowed_file(data_file.filename):
-            filename = data_file.filename
-            path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            data_file.save(path)
-            session["filename"] = filename
-            if "control_id" not in session:
-                session["control_id"] = 1
-            else:
-                session["control_id"] += 1
-            return redirect(url_for('result_download'))
-    '''
-    if form.validate_on_submit():
-        file = form.data_file.data
-        filename = secure_filename(file.filename)
-        session["filename"] = filename
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    '''
-        #flash('Upload success! Please wait while we run our model.', 'alert-success')
+    print("HERE")
+    form2 = PreviewImageForm()
+    form1 = UploadImageForm()
 
-    return render_template('home.html', form=form)
+    if form2.validate_on_submit():
+        print("HERE2")
+        image = request.files['data_file_preview']
+        image_name = image.filename
+
+        npimg = np.fromfile(image, np.uint8)
+        image = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+        masked_image = mask_img(image)
+        cv2.imwrite(os.path.join(app.config['PREVIEW_FOLDER'], image_name), masked_image)
+
+        return render_template('home.html', form1=form1, form2=form2, image=masked_image, image_name=image_name)
+
+    if request.method == 'POST':
+        # For more than one file upload
+        all_files = request.files.getlist("data_file")
+        print(all_files)
+
+        if not all(allowed_file(x.filename) == True for x in all_files):
+            flash('Upload failed! Please ensure to only upload an image file.', 'alert-danger')
+            return redirect(url_for('home') +"#contact")
+
+        if all(allowed_file(x.filename) == True for x in all_files):
+            unique_num = str(str(datetime.today()).split(".")[0])[-9:].replace(':', '')
+            session['unique_num'] = unique_num
+            print(unique_num)
+            for file in all_files:
+                filename = file.filename
+                path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(path)
+
+            mask = form1.mask.data  ## mask refers to the boolean of either true or false
+            print(mask)
+            #results = run_predictions(all_files, mask)
+            results = run_predictions(all_files)
+            print(results)
+            #return render_template('result_download.html', unique_num=unique_num)
+            return redirect(url_for('result_download'))
+    return render_template('home.html', form1=form1, form2=form2)
 
 @app.route('/result_download', methods=['GET', 'POST'])
 def result_download():
-    filename = session.get("filename", None)
-    control_id = session.get("control_id", None)
-    return render_template('result_download.html', filename=filename, control_id=control_id)
-
-
-
+    unique_num = session.get("unique_num", None)
+    return render_template('result_download.html', unique_num=unique_num)
 
 def run_predictions(datafiles, mask=True):
     """
@@ -91,13 +107,29 @@ def run_predictions(datafiles, mask=True):
     def temp(df):
         data = {
             "filename": df.filename,
-            "image": df.data,
-            "annotated_image": df.data,
-            "prediction": get_prediction(df.data)
+            "image": df,
+            "annotated_image": df,
+            "prediction": get_prediction(df)
         }
         return data
 
     return list(map(temp, datafiles))
+
+def get_prediction(img):
+    """
+    TODO THIS IS WHERE OUR ENTIRE PREDICTION CODE WILL GO
+    """
+
+    preds = [mock_pred() for i in range(3)]
+    return preds
+
+def mock_pred():
+    return {
+        'predicted_class': random.randint(1,4),
+        'confidence': random.random(),
+        'bounding_box': [random.random(), random.random(), random.random(), random.random()]
+    }
+
 
 
 

@@ -59,16 +59,19 @@
           <i class="fa fa-bars"></i>
         </button>
         <div class="collapse navbar-collapse" id="navbarResponsive">
-          <ul class="navbar-nav text-uppercase ml-auto">
-            <li class="nav-item">
-              <a class="nav-link js-scroll-trigger active" href="#home">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link js-scroll-trigger" href="#about">About Us</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link js-scroll-trigger" href="#contact">Our Detector</a>
-            </li>
+            <ul class="navbar-nav text-uppercase ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link js-scroll-trigger active" href="#home">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link js-scroll-trigger" href="#about">About Us</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link js-scroll-trigger" href="#masking">Masking</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link js-scroll-trigger" href="#contact">Our Detector</a>
+                </li>
           </ul>
         </div>
       </div>
@@ -136,6 +139,36 @@
         </div><!-- end container -->
     </div><!-- end section -->
 
+    <div id="masking" class="section lb">
+        <div class="container">
+            <div class="section-title text-left">
+                <h3>Masking Preview</h3>
+                <p>This portion allows you to check if the masking will be useful for your image.</p>
+            </div><!-- end title -->
+            {% if image_name %}
+                <div>
+                    <img src="{{ url_for('static', filename='preview/' + image_name) }}" width='300' height='300' >
+                    <br><br>
+                </div>
+            {% endif %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="contact_form">
+                        <form method="POST" enctype="multipart/form-data">
+                            {{ form2.csrf_token }}
+                            <dl>
+                                {{ wtf.form_field(form2.data_file_preview) }}
+                                <p class="w3-opacity">Note: Please upload only image file (i.e. 'png', 'jpeg', 'jpg')</p><br>
+                                {{ wtf.form_field(form2.submit_preview, class="btn btn-secondary") }}
+                            </dl>
+                        </form>
+                    </div>
+                </div><!-- end col -->
+            </div><!-- end row -->
+
+        </div><!-- end container -->
+    </div><!-- end section -->
+
     <!-- Our Detector -->
     <div id="contact" class="section db">
         <div class="container">
@@ -143,18 +176,29 @@
                 <h3>Our Detector</h3>
                 <p>Our detector has an accuracy of XX% with XX mAP.</p>
             </div><!-- end title -->
+            <!--- Flash message --->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div id="error" class="alert {{ category }}" role="alert">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <div id="success" style="display: none" class="alert alert-success" role="alert">Upload success! Please wait while we run our model...</div>
 
             <div class="row">
                 <div class="col-md-12">
                     <div class="contact_form">
                         <div id="message"></div>
                         <form method="POST" enctype="multipart/form-data">
-                            {{ form.csrf_token }}
+                            {{ form1.csrf_token }}
                             <dl>
-                                {{ wtf.form_field(form.data_file) }}
+                                {{ wtf.form_field(form1.data_file) }}
+                                {{ wtf.form_field(form1.mask) }}
+                                <br>
                                 <p class="w3-opacity">Note: Please upload only image file (i.e. 'png', 'jpeg', 'jpg')</p>
-                                <p>If you submit a non-image file, the page will just refresh itself.</p><br>
-                                {{ wtf.form_field(form.submit, class="btn btn-secondary") }}
+                                {{ wtf.form_field(form1.submit, onclick="myFunction()", class="btn btn-secondary") }}
+
                             </dl>
                         </form>
                     </div>
@@ -190,9 +234,21 @@
     <!-- ALL PLUGINS -->
     <script src="{{url_for('static', filename='js/custom.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.vide.js')}}"></script>
+
     <script>
-        localStorage.setItem("firstname", "Smith");
+    function myFunction() {
+        var submit = document.getElementById("submit");
+        var data_file = document.getElementById("data_file");
+        var uploaded = document.getElementById("success");
+        var error = document.getElementById("error");
+
+        if (data_file.value != '') {
+            setTimeout(function(){uploaded.style.display = "block";}, 200);
+            error.style.display = "none";
+        }
+    }
     </script>
 
 </body>
 </html>
+
