@@ -1,5 +1,4 @@
 {% import "bootstrap/wtf.html" as wtf %}
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <!-- Basic -->
@@ -143,18 +142,18 @@
         <div class="container">
             <div class="section-title text-left">
                 <h3>Masking Preview</h3>
-                <p>This portion allows you to check if the masking will be useful for your image.</p>
+                <p>This portion allows you to check if the masking can be applied successfully to your image.</p>
             </div><!-- end title -->
-            {% if image_name %}
+            {% if masked_image_name %}
                 <div>
-                    <img src="{{ url_for('static', filename='preview/' + image_name) }}" width='300' height='300' >
+                    <img src="{{ url_for('static', filename='preview/' + masked_image_name) }}" width='300' height='300'>
                     <br><br>
                 </div>
             {% endif %}
             <div class="row">
                 <div class="col-md-12">
                     <div class="contact_form">
-                        <form method="POST" enctype="multipart/form-data">
+                        <form id="form2" method="POST" enctype="multipart/form-data">
                             {{ form2.csrf_token }}
                             <dl>
                                 {{ wtf.form_field(form2.data_file_preview) }}
@@ -190,10 +189,10 @@
                 <div class="col-md-12">
                     <div class="contact_form">
                         <div id="message"></div>
-                        <form method="POST" enctype="multipart/form-data">
-                            {{ form1.csrf_token }}
+                        <form id="form1" method="POST" enctype="multipart/form-data">
+
                             <dl>
-                                {{ wtf.form_field(form1.data_file) }}
+                                {{ wtf.form_field(form1.data_file)}}
                                 {{ wtf.form_field(form1.mask) }}
                                 <br>
                                 <p class="w3-opacity">Note: Please upload only image file (i.e. 'png', 'jpeg', 'jpg')</p>

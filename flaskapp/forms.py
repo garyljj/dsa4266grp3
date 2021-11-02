@@ -4,7 +4,7 @@ from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 class UploadImageForm(FlaskForm):
     data_file = FileField('Upload Image File', render_kw={'multiple': True}, validators=[FileRequired(), FileAllowed(['png', 'jpeg', 'jpg'], 'Image Files only!')])
-    mask = BooleanField('Mask', default=True)
+    mask = BooleanField('Mask (Tick to enable masking for prediction)', default=True)
     submit = SubmitField('Upload')
 
 class PreviewImageForm(FlaskForm):

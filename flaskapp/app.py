@@ -12,7 +12,7 @@ from .model import mask_img
 from flask_bootstrap import Bootstrap
 
 UPLOAD_FOLDER = 'flaskapp/static/uploaded_image'
-PREVIEW_FOLDER = '../static/preview'
+PREVIEW_FOLDER = 'flaskapp/static/preview'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 app = Flask(__name__)
@@ -27,19 +27,23 @@ def allowed_file(filename): #returns True if is an image
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    form2 = PreviewImageForm()
     form1 = UploadImageForm()
+    form2 = PreviewImageForm()
 
-    if form2.validate_on_submit():
+    if request.method == 'POST' and form2.validate_on_submit():
         image = request.files['data_file_preview']
-        image_name = image.filename
+        masked_image_name = 'masked_' + image.filename
         npimg = np.fromfile(image, np.uint8)
-        image = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
-        masked_image = mask_img(image)
-        cv2.imwrite(os.path.join(app.config['PREVIEW_FOLDER'], image_name), masked_image)
-        return render_template('home.html', form1=form1, form2=form2, image=masked_image, image_name=image_name)
+        to_be_masked_image = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+        masked_image = mask_img(to_be_masked_image)
+        cv2.imwrite(os.path.join(app.config['PREVIEW_FOLDER'], masked_image_name), masked_image)
 
-    if request.method == 'POST':
+        #original_image_name = image.filename
+        #image.save(os.path.join(app.config['PREVIEW_FOLDER'], original_image_name))
+        #return render_template('home.html', form1=form1, form2=form2, original_image_name=original_image_name, masked_image_name=masked_image_name)
+        return render_template('home.html', form1=form1, form2=form2, masked_image_name=masked_image_name)
+
+    if request.method == 'POST' and 'mask' in request.form:
         all_files = request.files.getlist("data_file")
         if not all(allowed_file(x.filename) == True for x in all_files):
             flash('Upload failed! Please ensure to only upload an image file.', 'alert-danger')
@@ -49,6 +53,7 @@ def home():
             unique_num = str(str(datetime.today()).split(".")[0])[-9:].replace(':', '')
             session['unique_num'] = unique_num
             print("Unique Number: ", unique_num)
+
             for file in all_files:
                 filename = file.filename
                 path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
