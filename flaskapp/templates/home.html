@@ -34,7 +34,6 @@
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
-
 </head>
 
 <body id="page-top" class="politics_version">
@@ -146,7 +145,8 @@
             </div><!-- end title -->
             {% if masked_image_name %}
                 <div>
-                    <img src="{{ url_for('static', filename='preview/' + masked_image_name) }}" width='300' height='300'>
+                    <img src="{{ url_for('static', filename='preview/' + masked_image_name) }}" width='{{image_size2}}' height='{{image_size1}}'>
+                    <img src="{{ url_for('static', filename='preview/' + image_name) }}" width='{{image_size2}}' height='{{image_size1}}'>
                     <br><br>
                 </div>
             {% endif %}

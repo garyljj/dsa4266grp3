@@ -13,12 +13,14 @@ from flask_bootstrap import Bootstrap
 
 UPLOAD_FOLDER = 'flaskapp/static/uploaded_image'
 PREVIEW_FOLDER = 'flaskapp/static/preview'
+OUTPUT_FOLDER = 'flaskapp/static/output'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'pokemon'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PREVIEW_FOLDER'] = PREVIEW_FOLDER
+app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
 Bootstrap(app)
 
 def allowed_file(filename): #returns True if is an image
@@ -32,16 +34,22 @@ def home():
 
     if request.method == 'POST' and form2.validate_on_submit():
         image = request.files['data_file_preview']
-        masked_image_name = 'masked_' + image.filename
-        npimg = np.fromfile(image, np.uint8)
-        to_be_masked_image = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
-        masked_image = mask_img(to_be_masked_image)
-        cv2.imwrite(os.path.join(app.config['PREVIEW_FOLDER'], masked_image_name), masked_image)
+        image_name = image.filename
 
-        #original_image_name = image.filename
-        #image.save(os.path.join(app.config['PREVIEW_FOLDER'], original_image_name))
-        #return render_template('home.html', form1=form1, form2=form2, original_image_name=original_image_name, masked_image_name=masked_image_name)
-        return render_template('home.html', form1=form1, form2=form2, masked_image_name=masked_image_name)
+        ## Saving original image
+        path = os.path.join(app.config['PREVIEW_FOLDER'], image_name)
+        image.save(path)
+
+        ## Masking Process
+        to_be_masked_image = cv2.imread(path)
+        masked_image = mask_img(to_be_masked_image) # use .shape
+        masked_image_name = 'masked_' + image.filename
+        image_size1= masked_image.shape[0] / 10
+        image_size2 = masked_image.shape[1] / 10
+
+        ## Saving masked image
+        cv2.imwrite(os.path.join(app.config['PREVIEW_FOLDER'], masked_image_name), masked_image)
+        return render_template('home.html', form1=form1, form2=form2, image_name=image_name, masked_image_name=masked_image_name, image_size1=image_size1, image_size2=image_size2)
 
     if request.method == 'POST' and 'mask' in request.form:
         all_files = request.files.getlist("data_file")
@@ -50,9 +58,10 @@ def home():
             return redirect(url_for('home') +"#contact")
 
         if all(allowed_file(x.filename) == True for x in all_files):
-            unique_num = str(str(datetime.today()).split(".")[0])[-9:].replace(':', '')
+            unique_num = str(str(datetime.today()).split(".")[0])[-9:].replace(':', '')[1:]
             session['unique_num'] = unique_num
             print("Unique Number: ", unique_num)
+            print(len(unique_num))
 
             for file in all_files:
                 filename = file.filename
@@ -61,8 +70,15 @@ def home():
 
             mask = form1.mask.data  ## mask refers to the boolean of either true or false
             print("Masking =", mask)
+
             results = run_predictions(all_files, mask)
             print(results)
+            name_of_result = unique_num + '.json'
+            os.chdir(app.config['OUTPUT_FOLDER'])
+
+            with open(name_of_result, 'w') as f:
+                json.dump(results, f)
+
             return redirect(url_for('result_download'))
     return render_template('home.html', form1=form1, form2=form2)
 
@@ -101,9 +117,9 @@ def run_predictions(datafiles, mask=True):
     def temp(df):
         data = {
             "filename": df.filename,
-            "image": df,
-            "annotated_image": df,
-            "prediction": get_prediction(df)
+            #"image": df,
+            #"annotated_image": df,
+            "predictions": get_prediction(df)
         }
         return data
 
