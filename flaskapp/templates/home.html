@@ -36,6 +36,21 @@
 
 </head>
 
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+  color: black;
+}
+</style>
+
 <body id="page-top" class="politics_version">
 
     <!-- LOADER -->
@@ -69,6 +84,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link js-scroll-trigger" href="#contact">Our Detector</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link js-scroll-trigger" href="#restapi">Rest API</a>
                 </li>
           </ul>
         </div>
@@ -115,7 +133,7 @@
         </path>
     </svg>
 
-    <!-- About Me -->
+    <!-- About Us -->
     <div id="about" class="section wb">
         <div class="container">
             <div class="row">
@@ -164,7 +182,6 @@
                     </div>
                 </div><!-- end col -->
             </div><!-- end row -->
-
         </div><!-- end container -->
     </div><!-- end section -->
 
@@ -190,14 +207,12 @@
                     <div class="contact_form">
                         <div id="message"></div>
                         <form id="form1" method="POST" enctype="multipart/form-data">
-
                             <dl>
                                 {{ wtf.form_field(form1.data_file)}}
                                 {{ wtf.form_field(form1.mask) }}
                                 <br>
                                 <p class="w3-opacity">Note: Please upload only image file (i.e. 'png', 'jpeg', 'jpg')</p>
                                 {{ wtf.form_field(form1.submit, onclick="myFunction()", class="btn btn-secondary") }}
-
                             </dl>
                         </form>
                     </div>
@@ -205,6 +220,44 @@
             </div><!-- end row -->
         </div><!-- end container -->
     </div><!-- end section -->
+
+    <div id="restapi" class="section wb">
+        <div class="container">
+            <div class="section-title text-left">
+                <h3>Documentation for Rest API</h3>
+                <pre><code><span class="color-bg-accent-emphasis color-fg-on-emphasis rounded-1 px-2 py-1" style="text-transform: uppercase">post</span> /predict</code></pre>
+                <br>
+                <h4>Parameters</h4>
+                <table>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>In</th>
+                    <th>Description</th>
+                  </tr>
+                  <tr>
+                    <td><code>content-type</code></td>
+                    <td><code>string</code></td>
+                    <td><code>header</code></td>
+                    <td><code>Application/json</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>filename</code></td>
+                    <td><code>string</code></td>
+                    <td><code>body</code></td>
+                    <td><code>Image filename</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>image_base64</code></td>
+                    <td><code>base 64 string</code></td>
+                    <td><code>body</code></td>
+                    <td><code>base64 version of image</code></td>
+                  </tr>
+                </table>
+            </div><!-- end title -->
+        </div><!-- end container -->
+    </div><!-- end section -->
+
 
     <div class="copyrights">
         <div class="container">
