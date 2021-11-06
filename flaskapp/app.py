@@ -92,8 +92,8 @@ def home():
                     with open(os.path.join(app.config['OUTPUT_FOLDER'], json_name), 'w') as f:
                         json.dump(output, f)
                     cv2.imwrite(os.path.join(app.config['OUTPUT_FOLDER'], image_name), img)
-                    z.write(os.path.join(app.config['OUTPUT_FOLDER'], json_name))
-                    z.write(os.path.join(app.config['OUTPUT_FOLDER'], image_name))
+                    z.write(os.path.join(app.config['OUTPUT_FOLDER'], json_name), 'outputs/' + json_name)
+                    z.write(os.path.join(app.config['OUTPUT_FOLDER'], image_name), 'outputs/' + image_name)
 
             ## Zipping everything in the output folder
             #shutil.make_archive(unique_num, 'zip', OUTPUT_FOLDER)
