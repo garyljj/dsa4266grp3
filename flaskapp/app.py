@@ -5,6 +5,7 @@ import json
 import time
 import numpy as np
 import cv2
+import shutil
 from flask import Flask, render_template, redirect, url_for, session, request, flash
 from flaskapp.forms import UploadImageForm, PreviewImageForm
 from datetime import datetime
@@ -32,6 +33,7 @@ def home():
     form1 = UploadImageForm()
     form2 = PreviewImageForm()
 
+    ## Preview of Masking Code
     if request.method == 'POST' and form2.validate_on_submit():
         image = request.files['data_file_preview']
         image_name = image.filename
@@ -51,33 +53,42 @@ def home():
         cv2.imwrite(os.path.join(app.config['PREVIEW_FOLDER'], masked_image_name), masked_image)
         return render_template('home.html', form1=form1, form2=form2, image_name=image_name, masked_image_name=masked_image_name, image_size1=image_size1, image_size2=image_size2)
 
+    ## Prediction Code
     if request.method == 'POST' and 'mask' in request.form:
         all_files = request.files.getlist("data_file")
-        if not all(allowed_file(x.filename) == True for x in all_files):
+        if not all(allowed_file(x.filename) == True for x in all_files): ## If not all files are images
             flash('Upload failed! Please ensure to only upload an image file.', 'alert-danger')
             return redirect(url_for('home') +"#contact")
 
-        if all(allowed_file(x.filename) == True for x in all_files):
-            unique_num = str(str(datetime.today()).split(".")[0])[-9:].replace(':', '')[1:]
+        if all(allowed_file(x.filename) == True for x in all_files): ## If all files are images
+            unique_num = str(str(datetime.today()).split(".")[0])[-9:].replace(':', '')[1:] ## Creating a unique_num for tracking
             session['unique_num'] = unique_num
             print("Unique Number: ", unique_num)
-            print(len(unique_num))
 
+            all_names = [] ## all_names: List to hold the names of the files
             for file in all_files:
                 filename = file.filename
+                all_names.append(filename[:-4]) ## Assuming all images end with .jpg
                 path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(path)
 
+            ## Status of Masking:
             mask = form1.mask.data  ## mask refers to the boolean of either true or false
             print("Masking =", mask)
 
+            ## Prediction using run_predictions
             output_json, a_img, final_counts = run_predictions(all_files, mask)
 
-            name_of_result = unique_num + '.zip'
-            os.chdir(app.config['OUTPUT_FOLDER'])
+            ## Looping through to name and output the json and image
+            for output, img, name in zip(output_json, a_img, all_names):
+                json_name = name + '.json'
+                image_name = name + '.jpg'
+                with open(os.path.join(app.config['OUTPUT_FOLDER'], json_name), 'w') as f:
+                    json.dump(output, f)
+                cv2.imwrite(os.path.join(app.config['OUTPUT_FOLDER'], image_name), img)
 
-            with open('testing.json', 'w') as f:
-                json.dump(output_json, f)
+            ## Zipping everything in the output folder
+            shutil.make_archive(unique_num, 'zip', OUTPUT_FOLDER)
 
             return redirect(url_for('result_download'))
     return render_template('home.html', form1=form1, form2=form2)
