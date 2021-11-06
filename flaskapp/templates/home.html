@@ -175,7 +175,7 @@ td, th {
                             {{ form2.csrf_token }}
                             <dl>
                                 {{ wtf.form_field(form2.data_file_preview) }}
-                                <p class="w3-opacity">Note: Please upload only image file (i.e. 'png', 'jpeg', 'jpg')</p><br>
+                                <p class="w3-opacity">Note: Please upload only image file (i.e. 'jpg')</p><br>
                                 {{ wtf.form_field(form2.submit_preview, class="btn btn-secondary") }}
                             </dl>
                         </form>
@@ -200,7 +200,7 @@ td, th {
                     {% endfor %}
                 {% endif %}
             {% endwith %}
-            <div id="success" style="display: none" class="alert alert-success" role="alert">Upload success! Please wait while we run our model...</div>
+            <div id="success" style="display: none" class="alert alert-success" role="alert">Upload success! You will be redirected once completed. Please wait while we run our model... </div>
 
             <div class="row">
                 <div class="col-md-12">
@@ -211,7 +211,7 @@ td, th {
                                 {{ wtf.form_field(form1.data_file)}}
                                 {{ wtf.form_field(form1.mask) }}
                                 <br>
-                                <p class="w3-opacity">Note: Please upload only image file (i.e. 'png', 'jpeg', 'jpg')</p>
+                                <p class="w3-opacity">Note: Please upload only image file (i.e.'jpg')</p>
                                 {{ wtf.form_field(form1.submit, onclick="myFunction()", class="btn btn-secondary") }}
                             </dl>
                         </form>
