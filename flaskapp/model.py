@@ -77,6 +77,10 @@ def mask_img(img):
     
     return img
 
+def encodebase64(img):
+    return base64.b64encode(cv2.imencode('.jpg', img)[1]).decode('utf8')
+
+
 def letterbox(img, new_shape=(640, 640), color=(114, 114, 114), auto=True, scaleFill=False, scaleup=False, stride=32):
     # Resize and pad image while meeting stride-multiple constraints
     shape = img.shape[:2]  # current shape [height, width]
@@ -167,7 +171,7 @@ def plot_one_box(x, im, color=(128, 128, 128), label=None, line_thickness=3):
 
 
 
-def run_model(datafiles, imgfolder_path = '', weights_path = "weights/best_2.pt", mask = True, DEVICE = 'cpu', IMAGE_SIZE = 4032): # an idea is: mask some but not all?
+def run_model(datafiles, weights_path = "weights/best_2.pt", mask = True, DEVICE = 'cpu', IMAGE_SIZE = 4032): # an idea is: mask some but not all?
 
     # # # Device to use (e.g. "0", "1", "2"... or "cpu")
     # DEVICE = "cpu"
@@ -180,10 +184,9 @@ def run_model(datafiles, imgfolder_path = '', weights_path = "weights/best_2.pt"
 
     # WEIGHTS = "weights/best_2.pt" # best weights: baseline for augmented train
     # # # to be switched to the tuned one
-    path = imgfolder_path
     WEIGHTS = weights_path
 
-    masked_bool_dict = {} # if we can get a list of which images to mask and not mask
+    # masked_bool_dict = {} # if we can get a list of which images to mask and not mask
     # and store it as dict: key = img_name , value = boolean where true = mask
     masked_img_dict = {}
     raw_img_dict = {}
@@ -199,11 +202,11 @@ def run_model(datafiles, imgfolder_path = '', weights_path = "weights/best_2.pt"
         item_name = datafile['filename']
         raw_img_dict[item_name] = im
         shape_dict[item_name] = im.shape
-        masked_bool_dict[item_name] = True # default = mask
+        # masked_bool_dict[item_name] = True # default = mask
 
     for img_name in raw_img_dict:
         raw_img = raw_img_dict[img_name].copy()
-        to_mask = masked_bool_dict[img_name]
+        # to_mask = masked_bool_dict[img_name]
         # if to_mask: # or if wanna just check for all
         if mask:  # then change to this line instead
           out_img = mask_img(raw_img) # mask it
@@ -222,23 +225,20 @@ def run_model(datafiles, imgfolder_path = '', weights_path = "weights/best_2.pt"
     # Model Inference
     img_num = 0
     empty_df = []
+    no_pred_imgs = []
     start = time.time()
     count = 0
     total_det = 0
-    px2_df = pd.DataFrame()
-
-
     for img_og, im0s in dataset:
         img = torch.from_numpy(img_og).to(device).float()
         img /= 255.0  # normalize image
         path = list(raw_img_dict.keys())[count]
-        pic_name = path.split("_part")[0]
         if img.ndimension() == 3:
             img = img.unsqueeze(0) # Include batch dimension
             pred = model(img)[0]
             pred_copy1 = pred.clone()
             # To group multiple bounding boxes into 1 based on IOU
-            pred = non_max_suppression(pred, conf_thres= 0.6, iou_thres=0.15, max_det=999)
+            pred = non_max_suppression(pred, conf_thres= 0.6, iou_thres=0.15, max_det=1000)
             pred_copy = pred.copy()
             # Process detections
             for i, det in enumerate(pred):  # detections per image
@@ -250,7 +250,7 @@ def run_model(datafiles, imgfolder_path = '', weights_path = "weights/best_2.pt"
                     # Rescale boxes from img_size to im0 size
                     det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
                     px = pd.DataFrame(det.numpy())
-                    px['pic_no'] = pic_name
+                    px['pic_no'] = path
                     px['x1'] = px[0]
                     px['x2'] = px[2]
                     px['y1'] = px[1]
@@ -262,82 +262,139 @@ def run_model(datafiles, imgfolder_path = '', weights_path = "weights/best_2.pt"
                     px['predicted_class'] = px[5]
                     px['confidence'] = px[4]
                     empty_df.append(px)
+                else:
+                    no_pred_imgs.append(path)
+            
             count +=1
-            end = time.time()
-            # if pred > 0:
-            print('time for {} is {}'.format(pic_name, end-start))
-
-    px2_df = pd.concat(empty_df, ignore_index=True)
 
     # Redraw bounding boxes on original image
-    final_dict = {}
+    # final_dict = {}
     empty_count_df = []
     empty_file_df = []
-    annotated_imgs = []
+    annotated_img_list = []
+    if len(empty_df):
+        px2_df = pd.concat(empty_df, ignore_index=True)
+        for pic_no in raw_img_dict:
+            img_og = raw_img_dict[pic_no].copy() # original image
+            img = torch.from_numpy(img_og).to(device).float()
+            img /= 255.0  # normalize image
+            if img.ndimension() == 3:
+                img = img.unsqueeze(0) # Include batch dimension
+                px_coords = px2_df[px2_df['pic_no'] == pic_no][['x1', 'y1', 'x2', 'y2', 'confidence', 'predicted_class']]
+                px_tensor_coords = torch.tensor(px_coords.values)
+                pred = [px_tensor_coords]                                              # remove this and above two lines for non-nms
+                px_coords['counts'] = 1
+                px_coords['pic_no'] = pic_no
+                cols = {0: 'Fertilised Egg', 1: 'Unfertilised Egg', 2: 'Fish Larvae', 3: 'Unidentifiable'}
+                count_df = px_coords.pivot_table('counts', ['pic_no'], 'predicted_class', aggfunc = [np.sum], fill_value=0).reset_index()
+                count_df = count_df.rename(columns = cols)
+                empty_count_df.append(count_df)
+                for i, det in enumerate(pred):  # detections per image
+                    if len(det):
+                        # Rescale boxes from img_size to im0 size
+                        for c in det[:, -1].unique():
+                            n = (det[:, -1] == c).sum()  # detections per class
+                            s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string  
+                        for *xyxy, conf, cls in reversed(det):
+                            c = int(cls)  # integer class
+                            label = f'{names[c]} {conf:.2f}'
+                            plot_one_box(xyxy, img_og, label= None, #label
+                                        color=colors(c, True), line_thickness=3)
+                # Save image
+                annotated_img_list.append(img_og)
 
-    for pic_no in raw_img_dict:
-        img_og = raw_img_dict[pic_no].copy() # original image
-        img = torch.from_numpy(img_og).to(device).float()
-        img /= 255.0  # normalize image
-        if img.ndimension() == 3:
-            img = img.unsqueeze(0) # Include batch dimension
-            px_coords = px2_df[px2_df['pic_no'] == pic_no][['x1', 'y1', 'x2', 'y2', 'confidence', 'predicted_class']]
-            px_tensor_coords = torch.tensor(px_coords.values)
-            pred = [px_tensor_coords]                                              # remove this and above two lines for non-nms
-            px_coords['counts'] = 1
-            px_coords['pic_no'] = pic_no
-            cols = {0: 'Fertilised Egg', 1: 'Unfertilised Egg', 2: 'Fish Larvae', 3: 'Unidentifiable'}
-            count_df = px_coords.pivot_table('counts', ['pic_no'], 'predicted_class', aggfunc = [np.sum]).reset_index()
-            count_df = count_df.rename(columns = cols)
-            empty_count_df.append(count_df)
-            for i, det in enumerate(pred):  # detections per image
-                if len(det):
-                    # Rescale boxes from img_size to im0 size
-                    for c in det[:, -1].unique():
-                        n = (det[:, -1] == c).sum()  # detections per class
-                        s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string  
-                    for *xyxy, conf, cls in reversed(det):
-                        c = int(cls)  # integer class
-                        label = f'{names[c]} {conf:.2f}'
-                        plot_one_box(xyxy, img_og, label= None, #label
-                                    color=colors(c, True), line_thickness=3)
-            # Save image
-            final_dict[pic_no] = img_og
+                # output list of dict format
+                px_dev = px2_df[px2_df['pic_no'] == pic_no][['x', 'y', 'w', 'h','predicted_class', 'confidence']] # retrieve bb coords
+                px_dev['x'] = px_dev.apply(lambda x: round(x['x'], 6), axis = 1)
+                px_dev['y'] = px_dev.apply(lambda x: round(x['y'], 6), axis = 1)
+                px_dev['w'] = px_dev.apply(lambda x: round(x['w'], 6), axis = 1)
+                px_dev['h'] = px_dev.apply(lambda x: round(x['h'], 6), axis = 1)
+                px_dev['confidence'] = px_dev.apply(lambda x: round(x['confidence'], 6), axis = 1)
+                px_dev['bounding_box'] = px_dev[['x','y','w','h']].values.tolist()
+                px_dev['predicted_class'] = px_dev.apply(lambda x: int(x['predicted_class']), axis = 1)
+                px_dev = px_dev.iloc[:, 4:7]
+                bb_vals = px_dev.to_json(orient="records")
+                file_data = {}
+                file_data['filename'] = pic_no # image/file name
+                file_data['image'] = encodebase64(raw_img_dict[pic_no]) # orginal image np array > can convert at this step to base64 image
+                # file_data['image'] = raw_img_dict[pic_no] # orginal image np array > can convert at this step to base64 image
+                # annotated_img_list.append(final_dict[pic_no])
+                # no word labels, maybe need a legend or sth
+                # 0: Fertilized Egg - Red
+                # 1: Unfertilized Egg - Pink
+                # 2: Fish Larva - Orange
+                # 3: Unidentifiable Object - Yellow
+                file_data['predictions'] = json.loads(bb_vals) # bounding boxes
+                empty_file_df.append(file_data)
 
-            # output json format
-            px_dev = px2_df[px2_df['pic_no'] == pic_no][['x', 'y', 'w', 'h','predicted_class', 'confidence']] # retrieve bb coords
-            px_dev['x'] = px_dev.apply(lambda x: round(x['x'], 6), axis = 1)
-            px_dev['y'] = px_dev.apply(lambda x: round(x['y'], 6), axis = 1)
-            px_dev['w'] = px_dev.apply(lambda x: round(x['w'], 6), axis = 1)
-            px_dev['h'] = px_dev.apply(lambda x: round(x['h'], 6), axis = 1)
-            px_dev['confidence'] = px_dev.apply(lambda x: round(x['confidence'], 6), axis = 1)
-            px_dev['bounding_box'] = px_dev[['x','y','w','h']].values.tolist()
-            px_dev['predicted_class'] = px_dev.apply(lambda x: int(x['predicted_class']), axis = 1)
-            px_dev = px_dev.iloc[:, 4:7]
-            bb_vals = px_dev.to_json(orient="records")
+    else: # no predictions at all for all images
+
+        for pic_no in raw_img_dict:
             file_data = {}
             file_data['filename'] = pic_no # image/file name
-            # file_data['image'] = cv2.imencode('.jpg', raw_img_dict[pic_no])[1].tobytes() # orginal image np array > can convert at this step to base64 image
-            file_data['annotated_image'] = final_dict[pic_no] # final image w labels > can convert at this step to base64 image
-            annotated_imgs.append(final_dict[pic_no])
-            # no word labels, maybe need a legend or sth
-            # 0: Fertilized Egg - Red
-            # 1: Unfertilized Egg - Pink
-            # 2: Fish Larva - Orange
-            # 3: Unidentifiable Object - Yellow
-            file_data['predictions'] = json.loads(bb_vals) # bounding boxes
-            file_data = pd.DataFrame.from_dict(file_data,orient='index').T
+            file_data['image'] = encodebase64(raw_img_dict[pic_no]) # orginal image np array > can convert at this step to base64 image
+            # file_data['image'] = raw_img_dict[pic_no] # orginal image np array > can convert at this step to base64 image
+            annotated_img_list.append(raw_img_dict[pic_no])
+            file_data['predictions'] = []
             empty_file_df.append(file_data)
-    file_df = pd.concat(empty_file_df, ignore_index=True)
 
-    # Count outputs (optional i guess):
-    px2_df['counts'] = 1
-    cols = {0: 'Fertilised Egg', 1: 'Unfertilised Egg', 2: 'Fish Larvae', 3: 'Unidentifiable'}
-    px_df1 = px2_df.pivot_table('counts', ['pic_no'], 'predicted_class', aggfunc = [np.sum]).reset_index()
-    final_counts = px_df1.rename(columns = cols)
+
+    counts = {}
+
+    for d in empty_file_df:
+        fn = d['filename']
+        if fn not in counts:
+            counts[fn] = [0,0,0,0]
+        for pred in d['predictions']:
+            counts[fn][pred['predicted_class']]+=1
+    for fn in no_pred_imgs:
+        counts[fn] = [0,0,0,0]
+        
+    final_counts = pd.DataFrame.from_dict(counts,orient='index').reset_index()
     print(final_counts)
 
+    final_counts.columns = ['pic_name', 'Fertilised Egg', 'Unfertilised Egg', 'Fish Larvae', 'Unidentifiable']
+
+
+    #     # Count outputs (optional i guess):
+    #     px2_df['counts'] = 1
+    #     # cols = {0: 'Fertilised Egg', 1: 'Unfertilised Egg', 2: 'Fish Larvae', 3: 'Unidentifiable'}
+    #     cols = ['pic_no', 'Fertilised Egg', 'Unfertilised Egg', 'Fish Larvae', 'Unidentifiable']
+    #     px_df1 = px2_df.pivot_table('counts', ['pic_no'], 'predicted_class', aggfunc = [np.sum], fill_value=0, dropna=False).reset_index().droplevel(0, axis=1)
+    #     print(px_df1)
+    #     # final_counts = px_df1.rename(columns = cols)
+    #     px_df1.columns = cols
+    #     if no_pred_imgs:
+    #         no_pred_imgs = pd.DataFrame(map(lambda x: [x,0,0,0,0], no_pred_imgs))
+    #         no_pred_imgs.columns = cols
+    #         # print(final_counts)
+    #         print(no_pred_imgs)
+    #     final_counts = pd.concat([px_df1, no_pred_imgs], ignore_index=True)
+    #     print(final_counts)
+
+    # else: # no predictions at all for all images
+
+    #     final_counts = pd.DataFrame(map(lambda x: [x,0,0,0,0], no_pred_imgs))
+    #     final_counts.columns = cols
+
+    #     # empty_data_dict = {}
+    #     # for pic_no in raw_img_dict:
+    #     #     img_og = raw_img_dict[pic_no].copy() # original image
+    #     #     file_data = {}
+    #     #     file_data['filename'] = pic_no # image/file name
+    #     #     file_data['image'] = encodebase64(raw_img_dict[pic_no]) # orginal image np array > can convert at this step to base64 image
+    #     #     # file_data['image'] = raw_img_dict[pic_no] # orginal image np array > can convert at this step to base64 image
+    #     #     annotated_img_list.append(raw_img_dict[pic_no])
+    #     #     file_data['predictions'] = []
+    #     #     empty_file_df.append(file_data)
+    #     #     empty_data_dict[pic_no] = [0, 0, 0, 0]
+
+    #     # final_counts = pd.DataFrame.from_dict(empty_data_dict, orient='index', columns=['Fertilised Egg', 'Unfertilised Egg', 'Fish Larvae', 'Unidentifiable'])
+    #     print(final_counts)
+    
+    return empty_file_df, annotated_img_list, final_counts
+
     # json output
-    output_json = json.loads(file_df.to_json(orient="records"))
-    return output_json, annotated_imgs, final_counts
+    # output_json = json.loads(file_df.to_json(orient="records"))
+    # return output_json, annotated_imgs, final_counts
 

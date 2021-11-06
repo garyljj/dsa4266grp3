@@ -75,7 +75,6 @@ def home():
                 all_names.append(filename[:-4]) ## Assuming all images end with .jpg
                 path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(path)
-
             ## Status of Masking:
             mask = form1.mask.data  ## mask refers to the boolean of either true or false
             print("Masking =", mask)
@@ -94,6 +93,9 @@ def home():
                     cv2.imwrite(os.path.join(app.config['OUTPUT_FOLDER'], image_name), img)
                     z.write(os.path.join(app.config['OUTPUT_FOLDER'], json_name), 'outputs/' + json_name)
                     z.write(os.path.join(app.config['OUTPUT_FOLDER'], image_name), 'outputs/' + image_name)
+                
+                final_counts.to_csv(os.path.join(app.config['OUTPUT_FOLDER'], 'counts.csv'), index=False)
+                z.write(os.path.join(app.config['OUTPUT_FOLDER'], 'counts.csv'), 'outputs/counts.csv')
 
             ## Zipping everything in the output folder
             #shutil.make_archive(unique_num, 'zip', OUTPUT_FOLDER)
@@ -144,12 +146,12 @@ def predict():
         'img': img
     }
 
-    output_json, file_df, final_counts = run_model([d], mask = True)
+    output_json, annotated_imgs, final_counts = run_model([d], mask = True)
 
     data['prediction'] = output_json[0]['predictions']
-    data['image_base64'] = data['image_base64'][:20] # TODO TEMP TRUNCATE, REMOVE LATER
+    data['image_base64'] = data['image_base64']
 
-    print(time.time() - start)
+    print(f'total time: {time.time() - start}')
     return json.dumps(data)
 
 @app.route('/testpage')
