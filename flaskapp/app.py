@@ -6,6 +6,7 @@ import time
 import numpy as np
 import cv2
 import shutil
+from zipfile import ZipFile
 from flask import Flask, render_template, redirect, url_for, session, request, flash
 from flaskapp.forms import UploadImageForm, PreviewImageForm
 from datetime import datetime
@@ -56,11 +57,14 @@ def home():
     ## Prediction Code
     if request.method == 'POST' and 'mask' in request.form:
         all_files = request.files.getlist("data_file")
-        if not all(allowed_file(x.filename) == True for x in all_files): ## If not all files are images
+
+        ## If not all files are images
+        if not all(allowed_file(x.filename) == True for x in all_files):
             flash('Upload failed! Please ensure to only upload an image file.', 'alert-danger')
             return redirect(url_for('home') +"#contact")
 
-        if all(allowed_file(x.filename) == True for x in all_files): ## If all files are images
+        ## If all files are images
+        if all(allowed_file(x.filename) == True for x in all_files):
             unique_num = str(str(datetime.today()).split(".")[0])[-9:].replace(':', '')[1:] ## Creating a unique_num for tracking
             session['unique_num'] = unique_num
             print("Unique Number: ", unique_num)
@@ -79,16 +83,21 @@ def home():
             ## Prediction using run_predictions
             output_json, a_img, final_counts = run_predictions(all_files, mask)
 
-            ## Looping through to name and output the json and image
+            ## Looping through to name and output the json and image, and then adding to the zip file
+            zip_name = unique_num + '.zip'
+            zipObj = ZipFile(zip_name, 'w')
+
             for output, img, name in zip(output_json, a_img, all_names):
                 json_name = name + '.json'
                 image_name = name + '.jpg'
                 with open(os.path.join(app.config['OUTPUT_FOLDER'], json_name), 'w') as f:
                     json.dump(output, f)
                 cv2.imwrite(os.path.join(app.config['OUTPUT_FOLDER'], image_name), img)
-
+                zipObj.write(json_name)
+                zipObj.write(image_name)
+            zipObj.close()
             ## Zipping everything in the output folder
-            shutil.make_archive(unique_num, 'zip', OUTPUT_FOLDER)
+            #shutil.make_archive(unique_num, 'zip', OUTPUT_FOLDER)
 
             return redirect(url_for('result_download'))
     return render_template('home.html', form1=form1, form2=form2)
