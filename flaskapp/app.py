@@ -25,7 +25,7 @@ Bootstrap(app)
 
 def allowed_file(filename): #returns True if is an image
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS #TODO should [-1] instead? potential bug if filename got . right?
+           filename.rsplit('.', 1)[-1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -71,13 +71,13 @@ def home():
             mask = form1.mask.data  ## mask refers to the boolean of either true or false
             print("Masking =", mask)
 
-            results = run_predictions(all_files, mask)
-            print(results)
-            name_of_result = unique_num + '.json'
+            output_json, a_img, final_counts = run_predictions(all_files, mask)
+
+            name_of_result = unique_num + '.zip'
             os.chdir(app.config['OUTPUT_FOLDER'])
 
-            with open(name_of_result, 'w') as f:
-                json.dump(results, f)
+            with open('testing.json', 'w') as f:
+                json.dump(output_json, f)
 
             return redirect(url_for('result_download'))
     return render_template('home.html', form1=form1, form2=form2)
@@ -88,66 +88,16 @@ def result_download():
     return render_template('result_download.html', unique_num=unique_num)
 
 def run_predictions(datafiles, mask=True):
-    
-    # can transform ur datafiles to correct format here
 
+    d = []
+    for datafile in datafiles:
+        datafile_name = datafile.filename
+        path = os.path.join(app.config['UPLOAD_FOLDER'], datafile_name)
+        transformed_image = cv2.imread(path)
+        d.append({'filename': datafile_name, 'img': transformed_image})
 
-
-
-    #######################################################
-
-
-
-
-    """
-    INPUT of run_model()
-    - run_model(data, mask=True) where data is list of dict -> [{}, {}, {}]
-    data's each dict requires 2 keys
-    {
-        'filename': filename eg '1.jpg',
-        'img': image in array format eg. output of cv2.imread()
-    }
-
-
-    OUTPUT
-    output_json: list of data
-        [
-            {
-                "filename": "img1.jpg",
-                "image": [[1,1...],[1,1...]...] #img array
-                "annotated_image":  [[1,1...],[1,1...]...], #img array
-                "prediction": [
-                    {
-                        'predicted_class': 1,
-                        'confidence': 0.538972,
-                        'bounding_box': [0.52875,0.23871,0.42894,0.4284]
-                    },
-                    ...
-                ]
-            },
-            {
-                next image
-            },
-            ...
-        ]
-
-    file_df: output_json but in df format
-    final_counts: df of final counts
-    """
-    # output_json, file_df, final_counts = run_model(data, mask = True) # dir = directory to file containing images
-
-
-
-    def temp(df):
-        data = {
-            "filename": df.filename,
-            #"image": df,
-            #"annotated_image": df,
-            "predictions": get_prediction(df)
-        }
-        return data
-
-    return list(map(temp, datafiles))
+    output_json, a_img, final_counts = run_model(d, mask=True)  # dir = directory to file containing images
+    return output_json, a_img, final_counts
 
 def tobase64(img):
     return cv2.imencode('.jpg', img)[1].tobytes()
