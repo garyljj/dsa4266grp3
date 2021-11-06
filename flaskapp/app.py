@@ -16,7 +16,7 @@ from flask_bootstrap import Bootstrap
 UPLOAD_FOLDER = 'flaskapp/static/uploaded_image'
 PREVIEW_FOLDER = 'flaskapp/static/preview'
 OUTPUT_FOLDER = 'flaskapp/static/output'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+ALLOWED_EXTENSIONS = {'jpg'}
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'pokemon'
@@ -119,22 +119,17 @@ def run_predictions(datafiles, mask=True):
     output_json, a_img, final_counts = run_model(d, mask=True)  # dir = directory to file containing images
     return output_json, a_img, final_counts
 
-def tobase64(img):
-    return cv2.imencode('.jpg', img)[1].tobytes()
+# def get_prediction(img):
 
-def get_prediction(img):
+#     preds = [mock_pred() for i in range(3)]
+#     return preds
 
-    preds = [mock_pred() for i in range(3)]
-    return preds
-
-def mock_pred():
-    return {
-        'predicted_class': random.randint(1,4),
-        'confidence': random.random(),
-        'bounding_box': [random.random(), random.random(), random.random(), random.random()]
-    }
-
-
+# def mock_pred():
+#     return {
+#         'predicted_class': random.randint(1,4),
+#         'confidence': random.random(),
+#         'bounding_box': [random.random(), random.random(), random.random(), random.random()]
+#     }
 
 
 # RESTAPI

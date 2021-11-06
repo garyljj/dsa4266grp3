@@ -18,7 +18,7 @@ from yolov5.utils.general import check_img_size, non_max_suppression, apply_clas
 from yolov5.utils.plots import colors
 from yolov5.utils.torch_utils import select_device, load_classifier
 
-# import base64
+import base64
 # import io
 # from imageio import imread
 import json
@@ -273,6 +273,7 @@ def run_model(datafiles, imgfolder_path = '', weights_path = "weights/best_2.pt"
     final_dict = {}
     empty_count_df = []
     empty_file_df = []
+    annotated_imgs = []
 
     for pic_no in raw_img_dict:
         img_og = raw_img_dict[pic_no].copy() # original image
@@ -316,8 +317,9 @@ def run_model(datafiles, imgfolder_path = '', weights_path = "weights/best_2.pt"
             bb_vals = px_dev.to_json(orient="records")
             file_data = {}
             file_data['filename'] = pic_no # image/file name
-            file_data['image'] = raw_img_dict[pic_no] # orginal image np array > can convert at this step to base64 image
+            # file_data['image'] = cv2.imencode('.jpg', raw_img_dict[pic_no])[1].tobytes() # orginal image np array > can convert at this step to base64 image
             file_data['annotated_image'] = final_dict[pic_no] # final image w labels > can convert at this step to base64 image
+            annotated_imgs.append(final_dict[pic_no])
             # no word labels, maybe need a legend or sth
             # 0: Fertilized Egg - Red
             # 1: Unfertilized Egg - Pink
@@ -337,5 +339,5 @@ def run_model(datafiles, imgfolder_path = '', weights_path = "weights/best_2.pt"
 
     # json output
     output_json = json.loads(file_df.to_json(orient="records"))
-    return output_json, file_df, final_counts
+    return output_json, annotated_imgs, final_counts
 
