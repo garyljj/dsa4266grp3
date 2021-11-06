@@ -8,7 +8,7 @@ import cv2
 from flask import Flask, render_template, redirect, url_for, session, request, flash
 from flaskapp.forms import UploadImageForm, PreviewImageForm
 from datetime import datetime
-from flaskapp.model import mask_img, run_predictions
+from flaskapp.model import mask_img, run_model
 from flask_bootstrap import Bootstrap
 
 UPLOAD_FOLDER = 'flaskapp/static/uploaded_image'
@@ -25,7 +25,7 @@ Bootstrap(app)
 
 def allowed_file(filename): #returns True if is an image
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS #TODO should [-1] instead? potential bug if filename got . right?
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -87,53 +87,72 @@ def result_download():
     unique_num = session.get("unique_num", None)
     return render_template('result_download.html', unique_num=unique_num)
 
-# def run_predictions(datafiles, mask=True):
-#     """
-#     in: list of datafile
-#     out: list of data
-#         [
-#             {
-#                 "filename": "img1.jpg",
-#                 "image": [[1,1...],[1,1...]...] #img array
-#                 "annotated_image":  [[1,1...],[1,1...]...], #img array
-#                 "prediction": [
-#                     {
-#                         'predicted_class': 1,
-#                         'confidence': 0.538972,
-#                         'bounding_box': [0.52875,0.23871,0.42894,0.4284]
-#                     },
-#                     ...
-#                 ]
-#             },
-#             {
-#                 next image
-#             },
-#             ...
-#         ]
-#     """
+def run_predictions(datafiles, mask=True):
+    
+    # can transform ur datafiles to correct format here
 
-#     time.sleep(5)
 
-#     def temp(df):
-#         data = {
-#             "filename": df.filename,
-#             #"image": df,
-#             #"annotated_image": df,
-#             "predictions": get_prediction(df)
-#         }
-#         return data
 
-#     return list(map(temp, datafiles))
+
+    #######################################################
+
+
+
+
+    """
+    INPUT of run_model()
+    - run_model(data, mask=True) where data is list of dict -> [{}, {}, {}]
+    data's each dict requires 2 keys
+    {
+        'filename': filename eg '1.jpg',
+        'img': image in array format eg. output of cv2.imread()
+    }
+
+
+    OUTPUT
+    output_json: list of data
+        [
+            {
+                "filename": "img1.jpg",
+                "image": [[1,1...],[1,1...]...] #img array
+                "annotated_image":  [[1,1...],[1,1...]...], #img array
+                "prediction": [
+                    {
+                        'predicted_class': 1,
+                        'confidence': 0.538972,
+                        'bounding_box': [0.52875,0.23871,0.42894,0.4284]
+                    },
+                    ...
+                ]
+            },
+            {
+                next image
+            },
+            ...
+        ]
+
+    file_df: output_json but in df format
+    final_counts: df of final counts
+    """
+    # output_json, file_df, final_counts = run_model(data, mask = True) # dir = directory to file containing images
+
+
+
+    def temp(df):
+        data = {
+            "filename": df.filename,
+            #"image": df,
+            #"annotated_image": df,
+            "predictions": get_prediction(df)
+        }
+        return data
+
+    return list(map(temp, datafiles))
+
+def tobase64(img):
+    return cv2.imencode('.jpg', img)[1].tobytes()
 
 def get_prediction(img):
-    """
-    TODO THIS IS WHERE OUR ENTIRE PREDICTION CODE WILL GO
-    """
-    print('in get_prediction')
-    path = "image/" # path to folder containing original sized test images
-    dirs = os.listdir( path )
-    dirs.sort()
-    output_json, file_df, final_counts = run_predictions(dirs, path, mask = True) # dir = directory to file containing images
 
     preds = [mock_pred() for i in range(3)]
     return preds
@@ -152,27 +171,22 @@ def mock_pred():
 @app.route('/predict', methods=['POST'])
 def predict():
     start = time.time()
-    print('in predict')
     data = json.loads(request.get_json())
-    img = base64.b64decode(data['image_base64'].encode('utf8'))
-    data['prediction'] = get_prediction(img)
+    img_binary = base64.b64decode(data['image_base64'].encode('utf8'))
+    img = cv2.imdecode(np.frombuffer(img_binary, np.uint8), flags=1)
+
+    d = {
+        'filename': data['filename'],
+        'img': img
+    }
+
+    output_json, file_df, final_counts = run_model([d], mask = True)
+
+    data['prediction'] = output_json[0]['predictions']
+    data['image_base64'] = data['image_base64'][:20] # TODO TEMP TRUNCATE, REMOVE LATER
+
     print(time.time() - start)
     return json.dumps(data)
-
-# def get_prediction(img):
-#     """
-#     TODO THIS IS WHERE OUR ENTIRE PREDICTION CODE WILL GO
-#     """
-
-#     preds = [mock_pred() for i in range(3)]
-#     return preds
-
-# def mock_pred():
-#     return {
-#         'predicted_class': random.randint(1,4),
-#         'confidence': random.random(),
-#         'bounding_box': [random.random(), random.random(), random.random(), random.random()]
-#     }
 
 @app.route('/testpage')
 def test():

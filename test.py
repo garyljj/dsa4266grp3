@@ -13,7 +13,7 @@ def predict(url, image_filepath):
     header = {"content-type": "application/json"}
     data = {
         "filename": image_filename,
-        "image_base64": image_base64[:100] # TODO truncated for now cos v long
+        "image_base64": image_base64
     }
 
     response = requests.post(url, json=json.dumps(data), headers=header)

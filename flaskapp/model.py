@@ -1,5 +1,4 @@
 import torch
-# from PIL import Image
 import os, sys
 import cv2
 import numpy as np
@@ -14,9 +13,7 @@ from tqdm import tqdm
 
 # # Test Model
 
-# from google.colab.patches import cv2_imshow
 from yolov5.models.experimental import attempt_load
-# from utils.datasets import LoadImages
 from yolov5.utils.general import check_img_size, non_max_suppression, apply_classifier, scale_coords
 from yolov5.utils.plots import colors
 from yolov5.utils.torch_utils import select_device, load_classifier
@@ -24,10 +21,7 @@ from yolov5.utils.torch_utils import select_device, load_classifier
 # import base64
 # import io
 # from imageio import imread
-# import json
-
-# import warnings
-# warnings.simplefilter("ignore", DeprecationWarning)
+import json
 
 # Image stretching (constrast)
 def clip_stretch(image, cmin, cmax):
@@ -173,23 +167,21 @@ def plot_one_box(x, im, color=(128, 128, 128), label=None, line_thickness=3):
 
 
 
+def run_model(datafiles, imgfolder_path = '', weights_path = "weights/best_2.pt", mask = True, DEVICE = 'cpu', IMAGE_SIZE = 4032): # an idea is: mask some but not all?
 
-def run_predictions(datafiles, path, mask = True): # an idea is: mask some but not all?
-    print('in run_predictions')
+    # # # Device to use (e.g. "0", "1", "2"... or "cpu")
+    # DEVICE = "cpu"
 
-    # # Device to use (e.g. "0", "1", "2"... or "cpu")
-    DEVICE = "cpu"
+    # # # Intended image size must be in multiples of 32
+    # # # Image will be resized for training
+    # IMAGE_SIZE = 4032
 
-    # # Intended image size must be in multiples of 32
-    # # Image will be resized for training
-    IMAGE_SIZE = 4032
+    # # # Instruction: insert the path of the weight to one of trained model from above
 
-    # # Instruction: insert the path of the weight to one of trained model from above
-
-    WEIGHTS = "weights/best_2.pt" # best weights: baseline for augmented train
-    # # to be switched to the tuned one
-
-
+    # WEIGHTS = "weights/best_2.pt" # best weights: baseline for augmented train
+    # # # to be switched to the tuned one
+    path = imgfolder_path
+    WEIGHTS = weights_path
 
     masked_bool_dict = {} # if we can get a list of which images to mask and not mask
     # and store it as dict: key = img_name , value = boolean where true = mask
@@ -197,11 +189,14 @@ def run_predictions(datafiles, path, mask = True): # an idea is: mask some but n
     raw_img_dict = {}
     shape_dict = {}
 
-    for item in datafiles:
+    for datafile in datafiles:
+    # for item in datafiles:
         # remove path accordingly ^
-        im = cv2.imread(path+item) # just lead it such that it does cv2.imread(img.jpg)
-        im = np.array(im)
-        item_name = item.split('.jpg')[0]
+        # im = cv2.imread(path+item) # just lead it such that it does cv2.imread(img.jpg)
+        im = datafile['img'] # just lead it such that it does cv2.imread(img.jpg)
+        # im = np.array(im)
+        # item_name = item.split('.jpg')[0]
+        item_name = datafile['filename']
         raw_img_dict[item_name] = im
         shape_dict[item_name] = im.shape
         masked_bool_dict[item_name] = True # default = mask
@@ -209,8 +204,8 @@ def run_predictions(datafiles, path, mask = True): # an idea is: mask some but n
     for img_name in raw_img_dict:
         raw_img = raw_img_dict[img_name].copy()
         to_mask = masked_bool_dict[img_name]
-        if to_mask: # or if wanna just check for all
-        # if mask:  # then change to this line instead
+        # if to_mask: # or if wanna just check for all
+        if mask:  # then change to this line instead
           out_img = mask_img(raw_img) # mask it
         else:
           out_img = raw_img # no masking
@@ -271,10 +266,7 @@ def run_predictions(datafiles, path, mask = True): # an idea is: mask some but n
             end = time.time()
             # if pred > 0:
             print('time for {} is {}'.format(pic_name, end-start))
-    # print("emptydf")
-    # print(empty_df)
-    # px2_df
-    # if empty_df: #TODO REMOVE?
+
     px2_df = pd.concat(empty_df, ignore_index=True)
 
     # Redraw bounding boxes on original image
@@ -310,8 +302,6 @@ def run_predictions(datafiles, path, mask = True): # an idea is: mask some but n
                                     color=colors(c, True), line_thickness=3)
             # Save image
             final_dict[pic_no] = img_og
-            # cv2_imshow(img_og)
-            #  cv2.imwrite(save_path, im0)
 
             # output json format
             px_dev = px2_df[px2_df['pic_no'] == pic_no][['x', 'y', 'w', 'h','predicted_class', 'confidence']] # retrieve bb coords
@@ -333,7 +323,7 @@ def run_predictions(datafiles, path, mask = True): # an idea is: mask some but n
             # 1: Unfertilized Egg - Pink
             # 2: Fish Larva - Orange
             # 3: Unidentifiable Object - Yellow
-            file_data['predictions'] = bb_vals # bounding boxes
+            file_data['predictions'] = json.loads(bb_vals) # bounding boxes
             file_data = pd.DataFrame.from_dict(file_data,orient='index').T
             empty_file_df.append(file_data)
     file_df = pd.concat(empty_file_df, ignore_index=True)
@@ -343,9 +333,9 @@ def run_predictions(datafiles, path, mask = True): # an idea is: mask some but n
     cols = {0: 'Fertilised Egg', 1: 'Unfertilised Egg', 2: 'Fish Larvae', 3: 'Unidentifiable'}
     px_df1 = px2_df.pivot_table('counts', ['pic_no'], 'predicted_class', aggfunc = [np.sum]).reset_index()
     final_counts = px_df1.rename(columns = cols)
-    # print(final_counts)
+    print(final_counts)
 
     # json output
-    output_json = file_df.to_json(orient="records")
+    output_json = json.loads(file_df.to_json(orient="records"))
     return output_json, file_df, final_counts
 
