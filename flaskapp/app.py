@@ -84,18 +84,17 @@ def home():
             output_json, a_img, final_counts = run_predictions(all_files, mask)
 
             ## Looping through to name and output the json and image, and then adding to the zip file
-            zip_name = unique_num + '.zip'
-            zipObj = ZipFile(zip_name, 'w')
+            zip_name = 'run_' + unique_num + '.zip'
+            with ZipFile(os.path.join(app.config['OUTPUT_FOLDER'], zip_name), 'w') as z:
+                for output, img, name in zip(output_json, a_img, all_names):
+                    json_name = name + '.json'
+                    image_name = name + '.jpg'
+                    with open(os.path.join(app.config['OUTPUT_FOLDER'], json_name), 'w') as f:
+                        json.dump(output, f)
+                    cv2.imwrite(os.path.join(app.config['OUTPUT_FOLDER'], image_name), img)
+                    z.write(os.path.join(app.config['OUTPUT_FOLDER'], json_name))
+                    z.write(os.path.join(app.config['OUTPUT_FOLDER'], image_name))
 
-            for output, img, name in zip(output_json, a_img, all_names):
-                json_name = name + '.json'
-                image_name = name + '.jpg'
-                with open(os.path.join(app.config['OUTPUT_FOLDER'], json_name), 'w') as f:
-                    json.dump(output, f)
-                cv2.imwrite(os.path.join(app.config['OUTPUT_FOLDER'], image_name), img)
-                zipObj.write(json_name)
-                zipObj.write(image_name)
-            zipObj.close()
             ## Zipping everything in the output folder
             #shutil.make_archive(unique_num, 'zip', OUTPUT_FOLDER)
 
