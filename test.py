@@ -23,3 +23,5 @@ if __name__ == '__main__':
     url = 'http://localhost:5000/predict' # TODO replace with endpoint after deployment
     path = 'image/1.jpg'
     print(json.dumps(predict(url, path), indent=4, sort_keys=False))
+
+# curl -X POST -H "Content-Type: application/json" -d "{\"filename\":\"1.jpg\"}" http://localhost:5000/predict

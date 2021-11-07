@@ -9,7 +9,7 @@ import numpy as np
 import cv2
 import shutil
 from zipfile import ZipFile
-from flask import Flask, render_template, redirect, url_for, session, request, flash
+from flask import Flask, render_template, redirect, url_for, session, request, flash, jsonify
 from flaskapp.forms import UploadImageForm, PreviewImageForm
 from datetime import datetime
 from flaskapp.model import mask_img, run_model
@@ -155,37 +155,26 @@ def run_predictions(datafiles, mask=True):
 def predict():
     start = time.time()
 
+    data = request.get_json()
+    if data is None:
+        return apiError('TypeError', 'Content type is not json')
+
     try:
-        data = json.loads(request.get_json())
+        if not isinstance(data, dict):
+            data = json.loads(request.get_json())
         filename = data['filename']
         imgbase64 = data['image_base64']
-    except TypeError:
-        return {
-            'error': {
-                "type": "TypeError",
-                "message": "Not a valid json"
-            }
-        }, 400
-    except KeyError:
-        return {
-            'error': {
-                "type": "KeyError",
-                "message": "Missing either 'filename' or 'image_base64' field"
-            }
-        }, 400
 
-    img_binary = base64.b64decode(imgbase64)
-    img = cv2.imdecode(np.frombuffer(img_binary, np.uint8), flags=1)
+        img_binary = base64.b64decode(imgbase64)
+        img = cv2.imdecode(np.frombuffer(img_binary, np.uint8), flags=1)
+
+    except KeyError:
+        return apiError('KeyError', "Missing either 'filename' or 'image_base64' field")
+    except:
+        return apiError('ParseError', 'Json data is invalid')
 
     if img is None:
-        return {
-            'error': {
-                "type": "ImageError",
-                "message": "Invalid Base64 image provided"
-            }
-        }, 400
-
-
+        return apiError('ImageError', 'Invalid Base64 image provided')
 
     d = {
         'filename': filename,
@@ -197,8 +186,16 @@ def predict():
     data['prediction'] = output_json[0]['predictions']
 
     print(f'total time: {time.time() - start}')
-    return json.dumps(data)
+    return jsonify(data)
 
 @app.route('/testpage')
 def test():
     return 'This is a testpage'
+
+def apiError(errortype, message):
+    return jsonify({
+        'error': {
+            'type': errortype,
+            'message': message
+        }
+    }), 400
