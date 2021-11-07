@@ -154,19 +154,47 @@ def run_predictions(datafiles, mask=True):
 @app.route('/predict', methods=['POST'])
 def predict():
     start = time.time()
-    data = json.loads(request.get_json())
-    img_binary = base64.b64decode(data['image_base64'].encode('utf8'))
+
+    try:
+        data = json.loads(request.get_json())
+        filename = data['filename']
+        imgbase64 = data['image_base64']
+    except TypeError:
+        return {
+            'error': {
+                "type": "TypeError",
+                "message": "Not a valid json"
+            }
+        }, 400
+    except KeyError:
+        return {
+            'error': {
+                "type": "KeyError",
+                "message": "Missing either 'filename' or 'image_base64' field"
+            }
+        }, 400
+
+    img_binary = base64.b64decode(imgbase64)
     img = cv2.imdecode(np.frombuffer(img_binary, np.uint8), flags=1)
 
+    if img is None:
+        return {
+            'error': {
+                "type": "ImageError",
+                "message": "Invalid Base64 image provided"
+            }
+        }, 400
+
+
+
     d = {
-        'filename': data['filename'],
+        'filename': filename,
         'img': img
     }
 
-    output_json, annotated_imgs, final_counts = run_model([d], mask = True)
+    output_json, annotated_imgs, final_counts = run_model([d])
 
     data['prediction'] = output_json[0]['predictions']
-    data['image_base64'] = data['image_base64']
 
     print(f'total time: {time.time() - start}')
     return json.dumps(data)
@@ -174,7 +202,6 @@ def predict():
 @app.route('/testpage')
 def test():
     return 'this is a testpage'
-
 
 if __name__ == '__main__':
     app.run(host='localhost', port=5000)
