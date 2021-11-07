@@ -99,18 +99,20 @@ def home():
 
             ## Looping through to name and output the json and image, and then adding to the zip file
             zip_name = 'run_' + unique_num + '.zip'
+            folder_in_zip = 'run_' + unique_num
+
             with ZipFile(os.path.join(app.config['OUTPUT_FOLDER'], zip_name), 'w') as z:
                 for output, img, name in zip(output_json, a_img, all_names):
                     json_name = name + '.json'
-                    image_name = name + '.jpg'
+                    image_name = name + '_annotated' + '.jpg'
                     with open(os.path.join(app.config['OUTPUT_FOLDER'], json_name), 'w') as f:
                         json.dump(output, f, indent=4)
                     cv2.imwrite(os.path.join(app.config['OUTPUT_FOLDER'], image_name), img)
-                    z.write(os.path.join(app.config['OUTPUT_FOLDER'], json_name), 'outputs/' + json_name)
-                    z.write(os.path.join(app.config['OUTPUT_FOLDER'], image_name), 'outputs/' + image_name)
+                    z.write(os.path.join(app.config['OUTPUT_FOLDER'], json_name), f'{folder_in_zip}/{json_name}')
+                    z.write(os.path.join(app.config['OUTPUT_FOLDER'], image_name), f'{folder_in_zip}/{image_name}')
                 
                 final_counts.to_csv(os.path.join(app.config['OUTPUT_FOLDER'], 'counts.csv'), index=False)
-                z.write(os.path.join(app.config['OUTPUT_FOLDER'], 'counts.csv'), 'outputs/counts.csv')
+                z.write(os.path.join(app.config['OUTPUT_FOLDER'], 'counts.csv'), f'{folder_in_zip}/counts.csv')
 
             ## Zipping everything in the output folder
             #shutil.make_archive(unique_num, 'zip', OUTPUT_FOLDER)
