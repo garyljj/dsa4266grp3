@@ -74,9 +74,8 @@ def home():
                 filename = file.filename
                 all_names.append(filename[:-4]) ## Assuming all images end with .jpg
                 path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                print(path)
-                print("EHCKING")
                 file.save(path)
+
             ## Status of Masking:
             mask = form1.mask.data  ## mask refers to the boolean of either true or false
             print("Masking =", mask)
