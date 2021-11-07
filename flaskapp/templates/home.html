@@ -51,7 +51,7 @@ td, th {
 }
 </style>
 
-<body id="page-top" class="politics_version">
+<body id="page-top" class="politics_version" onload="test();">
 
     <!-- LOADER -->
     <div id="preloader">
@@ -299,6 +299,12 @@ td, th {
             error.style.display = "none";
         }
     }
+
+    function test() {
+        if ("{{hash}}" == "#masking") {
+            document.getElementById("masking").scrollIntoView();
+            }
+    };
     </script>
 
 </body>

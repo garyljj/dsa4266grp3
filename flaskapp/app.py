@@ -52,7 +52,7 @@ def home():
 
         ## Saving masked image
         cv2.imwrite(os.path.join(app.config['PREVIEW_FOLDER'], masked_image_name), masked_image)
-        return render_template('home.html', form1=form1, form2=form2, image_name=image_name, masked_image_name=masked_image_name, image_size1=image_size1, image_size2=image_size2)
+        return render_template('home.html', hash="#masking", form1=form1, form2=form2, image_name=image_name, masked_image_name=masked_image_name, image_size1=image_size1, image_size2=image_size2)
 
     ## Prediction Code
     if request.method == 'POST' and 'mask' in request.form:
@@ -74,6 +74,8 @@ def home():
                 filename = file.filename
                 all_names.append(filename[:-4]) ## Assuming all images end with .jpg
                 path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                print(path)
+                print("EHCKING")
                 file.save(path)
             ## Status of Masking:
             mask = form1.mask.data  ## mask refers to the boolean of either true or false
@@ -101,7 +103,7 @@ def home():
             #shutil.make_archive(unique_num, 'zip', OUTPUT_FOLDER)
 
             return redirect(url_for('result_download'))
-    return render_template('home.html', form1=form1, form2=form2)
+    return render_template('home.html', hash="", form1=form1, form2=form2)
 
 @app.route('/result_download', methods=['GET', 'POST'])
 def result_download():
