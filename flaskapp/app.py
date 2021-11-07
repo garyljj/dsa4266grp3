@@ -1,4 +1,6 @@
 import os
+import stat
+import glob
 import base64
 import random
 import json
@@ -36,6 +38,12 @@ def home():
 
     ## Preview of Masking Code
     if request.method == 'POST' and form2.validate_on_submit():
+
+        files = glob.glob(os.path.join(app.config['PREVIEW_FOLDER'], "*"))
+        for f in files:
+            os.chmod(f, stat.S_IRUSR | stat.S_IWUSR)
+            os.remove(f)
+
         image = request.files['data_file_preview']
         image_name = image.filename
 
@@ -68,6 +76,12 @@ def home():
             unique_num = str(str(datetime.today()).split(".")[0])[-9:].replace(':', '')[1:] ## Creating a unique_num for tracking
             session['unique_num'] = unique_num
             print("Unique Number: ", unique_num)
+
+
+            files = glob.glob(os.path.join(app.config['OUTPUT_FOLDER'], "*"))
+            for f in files:
+                os.chmod(f, stat.S_IRUSR | stat.S_IWUSR)
+                os.remove(f)
 
             all_names = [] ## all_names: List to hold the names of the files
             for file in all_files:
