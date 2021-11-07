@@ -134,7 +134,7 @@ def run_predictions(datafiles, mask=True):
         transformed_image = cv2.imread(path)
         d.append({'filename': datafile_name, 'img': transformed_image})
 
-    output_json, a_img, final_counts = run_model(d, mask=True)  # dir = directory to file containing images
+    output_json, a_img, final_counts = run_model(d, mask=True)
     return output_json, a_img, final_counts
 
 # def get_prediction(img):
@@ -201,7 +201,4 @@ def predict():
 
 @app.route('/testpage')
 def test():
-    return 'this is a testpage'
-
-if __name__ == '__main__':
-    app.run(host='localhost', port=5000)
+    return 'This is a testpage'

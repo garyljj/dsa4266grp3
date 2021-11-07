@@ -3,7 +3,6 @@ import os, sys
 import cv2
 import numpy as np
 import pandas as pd
-# from csv import reader
 
 import matplotlib.pyplot as plt
 import skimage.measure
@@ -19,8 +18,6 @@ from yolov5.utils.plots import colors
 from yolov5.utils.torch_utils import select_device, load_classifier
 
 import base64
-# import io
-# from imageio import imread
 import json
 
 # Image stretching (constrast)
@@ -170,17 +167,10 @@ def plot_one_box(x, im, color=(128, 128, 128), label=None, line_thickness=3):
         cv2.putText(im, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
 
 
+def run_model(datafiles, weights_path = "weights/best_2.pt", mask = True, IMAGE_SIZE = 4032):
 
-def run_model(datafiles, weights_path = "weights/best_2.pt", mask = True, DEVICE = 'cpu', IMAGE_SIZE = 4032): # an idea is: mask some but not all?
-
-    # # # Device to use (e.g. "0", "1", "2"... or "cpu")
-    # DEVICE = "cpu"
-
-    # # # Intended image size must be in multiples of 32
-    # # # Image will be resized for training
-    # IMAGE_SIZE = 4032
-
-    # # # Instruction: insert the path of the weight to one of trained model from above
+    # Device to use (e.g. "0", "1", "2"... or "cpu")
+    DEVICE = "cpu"
 
     # WEIGHTS = "weights/best_2.pt" # best weights: baseline for augmented train
     # # # to be switched to the tuned one
@@ -193,12 +183,7 @@ def run_model(datafiles, weights_path = "weights/best_2.pt", mask = True, DEVICE
     shape_dict = {}
 
     for datafile in datafiles:
-    # for item in datafiles:
-        # remove path accordingly ^
-        # im = cv2.imread(path+item) # just lead it such that it does cv2.imread(img.jpg)
-        im = datafile['img'] # just lead it such that it does cv2.imread(img.jpg)
-        # im = np.array(im)
-        # item_name = item.split('.jpg')[0]
+        im = datafile['img']
         item_name = datafile['filename']
         raw_img_dict[item_name] = im
         shape_dict[item_name] = im.shape
@@ -349,12 +334,10 @@ def run_model(datafiles, weights_path = "weights/best_2.pt", mask = True, DEVICE
             counts[fn][pred['predicted_class']]+=1
     for fn in no_pred_imgs:
         counts[fn] = [0,0,0,0]
-        
     final_counts = pd.DataFrame.from_dict(counts,orient='index').reset_index()
-    print(final_counts)
-
     final_counts.columns = ['pic_name', 'Fertilised Egg', 'Unfertilised Egg', 'Fish Larvae', 'Unidentifiable']
 
+    print(final_counts)
 
     #     # Count outputs (optional i guess):
     #     px2_df['counts'] = 1
@@ -393,8 +376,4 @@ def run_model(datafiles, weights_path = "weights/best_2.pt", mask = True, DEVICE
     #     print(final_counts)
     
     return empty_file_df, annotated_img_list, final_counts
-
-    # json output
-    # output_json = json.loads(file_df.to_json(orient="records"))
-    # return output_json, annotated_imgs, final_counts
 
