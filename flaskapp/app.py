@@ -93,10 +93,11 @@ def home():
 
             ## Status of Masking:
             mask = form1.mask.data  ## mask refers to the boolean of either true or false
-            print("Masking =", mask)
+            fast = form1.fast.data  ## fast refers to the boolean of either true or false
+            print(f"Masking={mask}; Fast={fast}")
 
             ## Prediction using run_predictions
-            output_json, a_img, final_counts = run_predictions(all_files, mask)
+            output_json, a_img, final_counts = run_predictions(all_files, mask, fast)
 
             ## Looping through to name and output the json and image, and then adding to the zip file
             zip_name = 'run_' + unique_num + '.zip'
@@ -126,7 +127,7 @@ def result_download():
     unique_num = session.get("unique_num", None)
     return render_template('result_download.html', unique_num=unique_num)
 
-def run_predictions(datafiles, mask=True):
+def run_predictions(datafiles, mask, fast):
 
     d = []
     for datafile in datafiles:
@@ -135,7 +136,7 @@ def run_predictions(datafiles, mask=True):
         transformed_image = cv2.imread(path)
         d.append({'filename': datafile_name, 'img': transformed_image})
 
-    output_json, a_img, final_counts = run_model(d, mask=True)
+    output_json, a_img, final_counts = run_model(d, mask=mask, fast=fast)
     return output_json, a_img, final_counts
 
 # def get_prediction(img):
@@ -166,6 +167,7 @@ def predict():
         filename = data['filename']
         imgbase64 = data['image_base64']
         mask = True if data.get('mask', True) else False
+        fast = True if data.get('fast', True) else False
 
         img_binary = base64.b64decode(imgbase64)
         img = cv2.imdecode(np.frombuffer(img_binary, np.uint8), flags=1)
@@ -183,8 +185,8 @@ def predict():
         'img': img
     }
     
-    print(f'Masking = {mask}')
-    output_json, annotated_imgs, final_counts = run_model([d], mask=mask)
+    print(f"Masking={mask}; Fast={fast}")
+    output_json, annotated_imgs, final_counts = run_model([d], mask=mask, fast=fast)
 
     out_json = {
         'filename': data['filename'],

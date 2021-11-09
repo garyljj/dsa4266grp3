@@ -170,14 +170,17 @@ def plot_one_box(x, im, color=(128, 128, 128), label=None, line_thickness=3):
         cv2.putText(im, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
 
 
-def run_model(datafiles, weights_path = "weights/best743.pt", mask = True, IMAGE_SIZE = 4032):
+def run_model(datafiles, mask = True, fast = True, IMAGE_SIZE = 4032):
 
     # Device to use (e.g. "0", "1", "2"... or "cpu")
     DEVICE = "cpu"
 
     # WEIGHTS = "weights/best_2.pt" # best weights: baseline for augmented train
     # # # to be switched to the tuned one
-    WEIGHTS = weights_path
+    if fast:
+        WEIGHTS = "weights/best_s.pt"
+    else:
+        WEIGHTS = "weights/best_l.pt"
 
     # masked_bool_dict = {} # if we can get a list of which images to mask and not mask
     # and store it as dict: key = img_name , value = boolean where true = mask
