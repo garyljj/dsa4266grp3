@@ -63,7 +63,7 @@ def home():
         return render_template('home.html', hash="#masking", form1=form1, form2=form2, image_name=image_name, masked_image_name=masked_image_name, image_size1=image_size1, image_size2=image_size2)
 
     ## Prediction Code
-    if request.method == 'POST' and 'mask' in request.form:
+    if request.method == 'POST' and 'uploader' in request.form:
         all_files = request.files.getlist("data_file")
 
         ## If not all files are images

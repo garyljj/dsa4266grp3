@@ -6,6 +6,7 @@ class UploadImageForm(FlaskForm):
     data_file = FileField('Upload Image File', render_kw={'multiple': True}, validators=[FileRequired(), FileAllowed(['jpg'], 'Image Files only!')])
     mask = BooleanField('Mask (Tick to enable masking for prediction)', default=False)
     fast = BooleanField('Fast Prediction (Tick to enable faster weights. Smaller model which is up to 4x faster!)', default=False)
+    uploader = BooleanField(default=True)
     submit = SubmitField('Upload')
 
 class PreviewImageForm(FlaskForm):

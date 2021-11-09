@@ -214,10 +214,12 @@ td, th {
                     <div class="contact_form">
                         <div id="message"></div>
                         <form id="form1" method="POST" enctype="multipart/form-data">
+
                             <dl>
                                 {{ wtf.form_field(form1.data_file)}}
                                 {{ wtf.form_field(form1.mask) }}
                                 {{ wtf.form_field(form1.fast) }}
+                                <div style="display: none">{{ wtf.form_field(form1.uploader) }}</div>
                                 <br>
                                 <p class="w3-opacity">Note: Please upload only image file (i.e.'jpg')</p>
                                 {{ wtf.form_field(form1.submit, onclick="myFunction()", class="btn btn-secondary") }}
