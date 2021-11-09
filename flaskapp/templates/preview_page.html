@@ -83,14 +83,26 @@
 	<section id="home" class="main-banner parallaxie" style="background: url('../static/uploads/fishmainpage.jpg')">
 		<div class="heading">
 			<h1>Masking Preview</h1>
-            <table style="text-align: center;margin-left:auto;margin-right:auto;">
+            <table style="text-align: center; margin-left:auto;margin-right:auto;">
                 <tr>
-                  <th style="text-align: center;">Initial Image</th>
-                  <th style="text-align: center;">Image with Masking</th>
+                    <th style="text-align: center;">Initial Image</th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th style="text-align: center;">Image with Masking</th>
                 </tr>
                 <tr>
-                  <td style="text-align: center;"><img src="{{ url_for('static', filename='preview/' + image_name) }}" width='{{image_size2}}' height='{{image_size1}}'></td>
-                  <td style="text-align: center;"><img src="{{ url_for('static', filename='preview/' + masked_image_name) }}" width='{{image_size2}}' height='{{image_size1}}'></td>
+                    <td style="text-align: center;"><img src="{{ url_for('static', filename='preview/' + image_name) }}" width='{{image_size2}}' height='{{image_size1}}'></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td style="text-align: center;"><img src="{{ url_for('static', filename='preview/' + masked_image_name) }}" width='{{image_size2}}' height='{{image_size1}}'></td>
                 </tr>
             </table>
             <br><br>
