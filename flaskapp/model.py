@@ -56,22 +56,25 @@ def mask_img(img):
     
     # Perform image closing to fill gaps
     mask = cv2.dilate(mask, np.ones((15,15)).astype('uint8'),iterations=1)
-    mask = cv2.erode(mask, np.ones((15,15)).astype('uint8'),iterations=1)
+    mask = cv2.erode(mask, np.ones((14,14)).astype('uint8'),iterations=1)
    
     # Resize image back
     mask = cv2.resize(mask, (origin_w, origin_h))
     mask = np.where(mask==0,0,255).astype('uint8')
-    
+
     # Perform image closing once more
     mask = cv2.dilate(mask, np.ones((40,40)).astype('uint8'),iterations=1)
-    mask = cv2.erode(mask, np.ones((40,40)).astype('uint8'),iterations=1)
-    
-    # Covert to 0,1
-    mask = np.where(mask==0,0,1).astype('uint8')
-    
+    mask = cv2.erode(mask, np.ones((30,30)).astype('uint8'),iterations=1)
+    mask = cv2.blur(mask,(15,15))
+
+    # Covert to 0-1
+    mask = mask / 255.0
+
+    img = img.astype('float64')
     for channel in range(3):
         img[:,:,channel] *= mask
-    
+    img = img.astype('uint8')
+
     return img
 
 def encodebase64(img):
@@ -223,7 +226,7 @@ def run_model(datafiles, weights_path = "weights/best743.pt", mask = True, IMAGE
             pred = model(img)[0]
             pred_copy1 = pred.clone()
             # To group multiple bounding boxes into 1 based on IOU
-            pred = non_max_suppression(pred, conf_thres= 0.6, iou_thres=0.15, max_det=1000)
+            pred = non_max_suppression(pred, conf_thres= 0.45, iou_thres=0.15, max_det=1000)
             pred_copy = pred.copy()
             # Process detections
             for i, det in enumerate(pred):  # detections per image
