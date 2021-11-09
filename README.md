@@ -1,7 +1,8 @@
 How to use
-* start app with `python app.py`
-*  DONE :)
+* Start app with `python app.py` OR `flask run`
+* Done :)
 
-test.py
-* Sample script to send a post request
-* `python test.py > out.json`
+`test.py` is a sample script which sends a POST request to `\predict` (our REST API endpoint)
+* Edit `path` variable to the path of an existing image (or use the sample image found in `image/1.jpg`)
+* Run `python test.py > out.json`
+* Output json will be found in `out.json`
