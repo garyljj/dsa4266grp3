@@ -58,9 +58,15 @@ def home():
         image_size1= masked_image.shape[0] / 10
         image_size2 = masked_image.shape[1] / 10
 
+        session['image_name'] = image_name
+        session['masked_image_name'] = masked_image_name
+        session['image_size1'] = image_size1
+        session['image_size2'] = image_size2
+
         ## Saving masked image
         cv2.imwrite(os.path.join(app.config['PREVIEW_FOLDER'], masked_image_name), masked_image)
-        return render_template('home.html', hash="#masking", form1=form1, form2=form2, image_name=image_name, masked_image_name=masked_image_name, image_size1=image_size1, image_size2=image_size2)
+        return redirect(url_for('preview_page'))
+        #return render_template('preview_page.html', image_name=image_name, masked_image_name=masked_image_name, image_size1=image_size1, image_size2=image_size2)
 
     ## Prediction Code
     if request.method == 'POST' and 'uploader' in request.form:
@@ -77,7 +83,6 @@ def home():
             unique_num = str(str(datetime.today()).split(".")[0])[-9:].replace(':', '')[1:] ## Creating a unique_num for tracking
             session['unique_num'] = unique_num
             print("Unique Number: ", unique_num)
-
 
             files = glob.glob(os.path.join(app.config['OUTPUT_FOLDER'], "*"))
             for f in files:
@@ -121,6 +126,14 @@ def home():
             print(f'Total Time: {time.time() - start_time}')
             return redirect(url_for('result_download'))
     return render_template('home.html', hash="", form1=form1, form2=form2)
+
+@app.route('/preview_page', methods=['GET', 'POST'])
+def preview_page():
+    image_name = session.get("image_name", None)
+    masked_image_name = session.get("masked_image_name", None)
+    image_size1 = session.get("image_size1", None)
+    image_size2 = session.get("image_size2", None)
+    return render_template('preview_page.html', image_name=image_name, masked_image_name=masked_image_name, image_size1=image_size1, image_size2=image_size2)
 
 @app.route('/result_download', methods=['GET', 'POST'])
 def result_download():

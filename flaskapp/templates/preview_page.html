@@ -1,0 +1,129 @@
+{% import "bootstrap/wtf.html" as wtf %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Basic -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- Mobile Metas -->
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+     <!-- Site Metas -->
+    <title>DSA4266 Group 3 - Fish Larvae Counting</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Site Icons -->
+    <link rel="shortcut icon" href="../static/images/fishlogo.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="../static/images/apple-touch-icon.png">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+    <!-- Site CSS -->
+    <link rel="stylesheet" href="../static/style.css">
+    <!-- Responsive CSS -->
+    <link rel="stylesheet" href="../static/css/responsive.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../static/css/custom.css">
+	<script src="{{url_for('static', filename='js/modernizr.js')}}"></script> <!-- Modernizr -->
+
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+
+</head>
+
+<body id="page-top" class="politics_version">
+
+    <!-- LOADER -->
+    <div id="preloader">
+        <div id="main-ld">
+			<div id="loader"></div>
+		</div>
+    </div><!-- end loader -->
+    <!-- END LOADER -->
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+      <div class="container">
+        <a class="navbar-brand" href="#page-top">
+			<!--<img class="img-fluid" src="images/logo.png" alt="" /> -->
+		</a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          Menu
+          <i class="fa fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav text-uppercase ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home') }}#about">About Us</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home') }}#masking">Masking</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home') }}#contact">Our Detector</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home') }}#restapi">Rest API</a>
+                </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+	<section id="home" class="main-banner parallaxie" style="background: url('../static/uploads/fishmainpage.jpg')">
+		<div class="heading">
+			<h1>Masking Preview</h1>
+            <table style="text-align: center;margin-left:auto;margin-right:auto;">
+                <tr>
+                  <th style="text-align: center;">Initial Image</th>
+                  <th style="text-align: center;">Image with Masking</th>
+                </tr>
+                <tr>
+                  <td style="text-align: center;"><img src="{{ url_for('static', filename='preview/' + image_name) }}" width='{{image_size2}}' height='{{image_size1}}'></td>
+                  <td style="text-align: center;"><img src="{{ url_for('static', filename='preview/' + masked_image_name) }}" width='{{image_size2}}' height='{{image_size1}}'></td>
+                </tr>
+            </table>
+            <br><br>
+            <a href="{{ url_for('home') }}" style="background-color:white" class="sim-btn btn-hover-new" data-text="Go Back"><span>Go Back</span></a>
+		</div>
+	</section>
+
+    <div class="copyrights">
+        <div class="container">
+            <div class="footer-distributed">
+                <div class="footer-left">
+                    <p class="footer-company-name">All Rights Reserved. &copy; 2018 <a href="#">Dominic</a> Design By :
+					<a href="https://html.design/">html design</a></p>
+                </div>
+            </div>
+        </div><!-- end container -->
+    </div><!-- end copyrights -->
+
+    <a href="#" id="scroll-to-top" class="dmtop global-radius"><i class="fa fa-angle-up"></i></a>
+
+    <!-- ALL JS FILES -->
+
+    <script src="{{url_for('static', filename='js/all.js')}}"></script>
+	<!-- Camera Slider -->
+    <script src="{{url_for('static', filename='js/jquery.easing.1.3.js')}}"></script>
+    <script src="{{url_for('static', filename='js/parallaxie.js')}}"></script>
+    <script src="{{url_for('static', filename='js/headline.js')}}"></script>
+	<!-- Contact form JavaScript -->
+    <script src="{{url_for('static', filename='js/jqBootstrapValidation.js')}}"></script>
+    <script src="{{url_for('static', filename='js/contact_me.js')}}"></script>
+    <!-- ALL PLUGINS -->
+    <script src="{{url_for('static', filename='js/custom.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.vide.js')}}"></script>
+
+</body>
+</html>
