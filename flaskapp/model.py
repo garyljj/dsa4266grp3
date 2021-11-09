@@ -304,7 +304,7 @@ def run_model(datafiles, weights_path = "weights/best743.pt", mask = True, IMAGE
                 bb_vals = px_dev.to_json(orient="records")
                 file_data = {}
                 file_data['filename'] = pic_no # image/file name
-                file_data['image'] = encodebase64(raw_img_dict[pic_no]) # orginal image np array > can convert at this step to base64 image
+                file_data['image_base64'] = encodebase64(raw_img_dict[pic_no]) # orginal image np array > can convert at this step to base64 image
                 # file_data['image'] = raw_img_dict[pic_no] # orginal image np array > can convert at this step to base64 image
                 # annotated_img_list.append(final_dict[pic_no])
                 # no word labels, maybe need a legend or sth
@@ -320,7 +320,7 @@ def run_model(datafiles, weights_path = "weights/best743.pt", mask = True, IMAGE
         for pic_no in raw_img_dict:
             file_data = {}
             file_data['filename'] = pic_no # image/file name
-            file_data['image'] = encodebase64(raw_img_dict[pic_no]) # orginal image np array > can convert at this step to base64 image
+            file_data['image_base64'] = encodebase64(raw_img_dict[pic_no]) # orginal image np array > can convert at this step to base64 image
             # file_data['image'] = raw_img_dict[pic_no] # orginal image np array > can convert at this step to base64 image
             annotated_img_list.append(raw_img_dict[pic_no])
             file_data['predictions'] = []
