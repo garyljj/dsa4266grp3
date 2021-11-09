@@ -73,6 +73,7 @@ def home():
 
         ## If all files are images
         if all(allowed_file(x.filename) == True for x in all_files):
+            start_time = time.time()
             unique_num = str(str(datetime.today()).split(".")[0])[-9:].replace(':', '')[1:] ## Creating a unique_num for tracking
             session['unique_num'] = unique_num
             print("Unique Number: ", unique_num)
@@ -116,7 +117,7 @@ def home():
 
             ## Zipping everything in the output folder
             #shutil.make_archive(unique_num, 'zip', OUTPUT_FOLDER)
-
+            print(f'Total Time: {time.time() - start_time}')
             return redirect(url_for('result_download'))
     return render_template('home.html', hash="", form1=form1, form2=form2)
 
@@ -182,13 +183,17 @@ def predict():
         'img': img
     }
     
-    print(f'mask={mask}')
+    print(f'Masking = {mask}')
     output_json, annotated_imgs, final_counts = run_model([d], mask=mask)
 
-    data['prediction'] = output_json[0]['predictions']
+    out_json = {
+        'filename': data['filename'],
+        'image_base64': data['image_base64'],
+        'predictions': output_json[0]['predictions']
+    }
 
-    print(f'total time: {time.time() - start}')
-    return jsonify(data)
+    print(f'Total Time: {time.time() - start}')
+    return jsonify(out_json)
 
 @app.route('/testpage')
 def test():
