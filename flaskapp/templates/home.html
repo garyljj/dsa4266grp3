@@ -165,8 +165,8 @@ td, th {
                 <div>
                     <table>
                         <tr>
-                          <th>Initial image</th>
-                          <th>Image with masking</th>
+                          <th style="text-align: center;">Initial image</th>
+                          <th style="text-align: center;">Image with masking</th>
                         </tr>
                         <tr>
                           <td style="text-align: center;"><img src="{{ url_for('static', filename='preview/' + image_name) }}" width='{{image_size2}}' height='{{image_size1}}'></td>
@@ -198,7 +198,6 @@ td, th {
         <div class="container">
             <div class="section-title text-left">
                 <h3>Our Detector</h3>
-                <p>Our detector has an accuracy of XX% with XX mAP.</p>
             </div><!-- end title -->
             <!--- Flash message --->
             {% with messages = get_flashed_messages(with_categories=true) %}
