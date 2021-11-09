@@ -164,6 +164,7 @@ def predict():
             data = json.loads(request.get_json())
         filename = data['filename']
         imgbase64 = data['image_base64']
+        mask = True if data.get('mask', True) else False
 
         img_binary = base64.b64decode(imgbase64)
         img = cv2.imdecode(np.frombuffer(img_binary, np.uint8), flags=1)
@@ -180,8 +181,9 @@ def predict():
         'filename': filename,
         'img': img
     }
-
-    output_json, annotated_imgs, final_counts = run_model([d])
+    
+    print(f'mask={mask}')
+    output_json, annotated_imgs, final_counts = run_model([d], mask=mask)
 
     data['prediction'] = output_json[0]['predictions']
 
