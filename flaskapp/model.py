@@ -170,7 +170,7 @@ def plot_one_box(x, im, color=(128, 128, 128), label=None, line_thickness=3):
         cv2.putText(im, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
 
 
-def run_model(datafiles, mask = True, fast = True, IMAGE_SIZE = 4032):
+def run_model(datafiles, mask = False, fast = False, IMAGE_SIZE = 4032):
 
     # Device to use (e.g. "0", "1", "2"... or "cpu")
     DEVICE = "cpu"

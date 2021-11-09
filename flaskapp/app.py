@@ -166,8 +166,8 @@ def predict():
             data = json.loads(request.get_json())
         filename = data['filename']
         imgbase64 = data['image_base64']
-        mask = True if data.get('mask', True) else False
-        fast = True if data.get('fast', True) else False
+        mask = True if data.get('mask', False) else False
+        fast = True if data.get('fast', False) else False
 
         img_binary = base64.b64decode(imgbase64)
         img = cv2.imdecode(np.frombuffer(img_binary, np.uint8), flags=1)

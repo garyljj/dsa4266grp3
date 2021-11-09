@@ -13,15 +13,20 @@ def predict(url, image_filepath):
     header = {"content-type": "application/json"}
     data = {
         "filename": image_filename,
-        "image_base64": image_base64
+        "image_base64": image_base64,
+        "mask": True
     }
 
     response = requests.post(url, json=json.dumps(data), headers=header)
+    # response = requests.post(url, "random")
     return response.json()
 
 if __name__ == '__main__':    
-    url = 'http://localhost:5000/predict' # TODO replace with endpoint after deployment
+    url = 'http://127.0.0.1:5000/predict' # TODO replace with endpoint after deployment
     path = 'image/1.jpg'
-    print(json.dumps(predict(url, path), indent=4, sort_keys=False))
+    output = predict(url, path)
+    print(json.dumps(output, indent=4, sort_keys=False))
+
+
 
 # curl -X POST -H "Content-Type: application/json" -d "{\"filename\":\"1.jpg\"}" http://localhost:5000/predict
