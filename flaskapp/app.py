@@ -201,11 +201,7 @@ def predict():
     print(f"Masking={mask}; Fast={fast}")
     output_json, annotated_imgs, final_counts = run_model([d], mask=mask, fast=fast)
 
-    out_json = {
-        'filename': data['filename'],
-        'image_base64': data['image_base64'],
-        'predictions': output_json[0]['predictions']
-    }
+    out_json = output_json[0]
 
     print(f'Total Time: {time.time() - start}')
     return jsonify(out_json)

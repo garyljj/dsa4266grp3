@@ -307,7 +307,7 @@ def run_model(datafiles, mask = False, fast = False, IMAGE_SIZE = 4032):
                 bb_vals = px_dev.to_json(orient="records")
                 file_data = {}
                 file_data['filename'] = pic_no # image/file name
-                file_data['image_base64'] = encodebase64(raw_img_dict[pic_no]) # orginal image np array > can convert at this step to base64 image
+                file_data['image_base64'] = encodebase64(img_og) # orginal image np array > can convert at this step to base64 image
                 # file_data['image'] = raw_img_dict[pic_no] # orginal image np array > can convert at this step to base64 image
                 # annotated_img_list.append(final_dict[pic_no])
                 # no word labels, maybe need a legend or sth
